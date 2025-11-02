@@ -429,10 +429,14 @@ router.get('/post/:slug', async (req, res) => {
             return res.status(404).render('error.handlebars', { message: 'Post not found', code: 404 });
         }
 
-        // If post is private, only SuperAdmin can view it
+        // If post is private, check for permissions
         if (post.rows[0].status === 'private') {
-            if (!req.session.user || req.session.user.role !== 'SuperAdmin') {
-                return res.status(403).render('error.handlebars', { message: 'Access denied. Only SuperAdmin can view private posts.', code: 403 });
+            const user = req.session.user;
+            const isOwner = user && user.username === post.rows[0].author_name;
+            const isSuperAdmin = user && user.role === 'SuperAdmin';
+
+            if (!isOwner && !isSuperAdmin) {
+                return res.status(403).render('error.handlebars', { message: 'This post is private. Only the owner can see it.', code: 403 });
             }
         }
 

@@ -271,7 +271,7 @@ server.use(generalLimiter);
 server.use(blogRouter);
 
 // Apply a stricter limiter for dashboard routes
-server.use('/dashboard', dashboardLimiter, dashboardRouter);
+server.use('/dashboard', dashboardLimiter, validateSessionAndRole('SuperAdmin'), dashboardRouter);
 
 server.use((req, res) => {
   res.status(404).render('error.handlebars', { message: 'Page not found', code: 404 });

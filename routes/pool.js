@@ -15,12 +15,12 @@ const poolConfig = {
 export const pool = new Pool(poolConfig);
 
 // Test connection for pool
-(async () => {
-  try {
-    const client = await pool.connect();
-    console.log("Connected to neon PostgreSQL database (pool)!");
-    client.release();
-  } catch (err) {
-    console.error("Database connection error (pool):", err);
-  }
+ (async () => {
+   try {
+     const client = await pool.connect();
+     console.log("Connected to neon PostgreSQL database (pool)!");
+     client.release();
+   } catch (err) {
+     console.error("Database connection error (pool):", err);
+   }
 })();

@@ -98,37 +98,42 @@
                 <ul class="nav-menu" id="dashboardNavMenu">
                     <li class="nav-item">
                         <a href="/dashboard" class="nav-link {{#if (eq active 'dashboard')}}active{{/if}}">
-                            <i class="fas fa-chart-line"></i> Overview
+                            <span><i class="fas fa-chart-line"></i> Overview</span>
                         </a>
                     </li>
                     <li class="nav-item">
                         <a href="/dashboard/posts" class="nav-link {{#if (eq active 'posts')}}active{{/if}}">
-                            <i class="fas fa-newspaper"></i> Posts
+                            <span><i class="fas fa-newspaper"></i> Posts</span>
                         </a>
                     </li>
                     <li class="nav-item">
                         <a href="/dashboard/categories" class="nav-link {{#if (eq active 'categories')}}active{{/if}}">
-                            <i class="fas fa-folder"></i> Categories
+                            <span><i class="fas fa-folder"></i> Categories</span>
                         </a>
                     </li>
                     <li class="nav-item">
                         <a href="/dashboard/tags" class="nav-link {{#if (eq active 'tags')}}active{{/if}}">
-                            <i class="fas fa-tags"></i> Tags
+                            <span><i class="fas fa-tags"></i> Tags</span>
                         </a>
                     </li>
                     <li class="nav-item">
                         <a href="/dashboard/comments" class="nav-link {{#if (eq active 'comments')}}active{{/if}}">
-                            <i class="fas fa-comments"></i> Comments
+                            <span><i class="fas fa-comments"></i> Comments</span>
                         </a>
                     </li>
                     <li class="nav-item">
                         <a href="/" class="nav-link">
-                            <i class="fas fa-home"></i> Back to Blog
+                            <span><i class="fas fa-home"></i> Back to Blog</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a onclick="downloadAllData()" class="nav-link">
+                            <span><i class="fas fa-download"></i> All Data</span>
                         </a>
                     </li>
                     <li class="nav-item">
                         <a onclick="logout()" class="nav-link" style="cursor: pointer;">
-                            <i class="fas fa-sign-out-alt"></i> Logout
+                            <span><i class="fas fa-sign-out-alt"></i> Logout</span>
                         </a>
                     </li>
                 </ul>
@@ -173,6 +178,12 @@
                 });
             }
         });
+
+        function downloadAllData() {
+            if (confirm('Are you sure you want to download all data?')) {
+                window.location.href = '/dashboard/api/download-all-data';
+            }
+        }
     </script>
     {{{_sections.scripts}}}
 </body>

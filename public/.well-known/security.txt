@@ -1,4 +1,4 @@
-# security.txt for Pret-By-Abeha-Clothing-Store
+# security.txt for blog.mbktechstudio.com
 
 Contact: mailto:support@mbktechstudio.com
 Contact: https://mbktechstudio.com/Support

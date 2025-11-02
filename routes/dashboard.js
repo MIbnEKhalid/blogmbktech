@@ -3,7 +3,6 @@ import { pool } from './pool.js';
 import { marked } from 'marked';
 import Prism from 'prismjs';
 import multer from 'multer';
-import { validateSessionAndRole } from 'mbkauthe';
 
 // Configure multer for form data parsing
 const upload = multer();
@@ -19,20 +18,11 @@ marked.setOptions({
     breaks: true,
     gfm: true
 });
-const router = express.Router();
 
-router.use(validateSessionAndRole('SuperAdmin'));
+const router = express.Router();
 
 // Middleware to parse FormData for all routes in this module
 router.use(upload.none());
-
-// Middleware to check if user is authenticated and is an admin
-const isAdmin = (req, res, next) => {
-    next();
-};
-
-// Apply admin middleware to all dashboard routes
-router.use(isAdmin);
 
 // Dashboard home
 router.get('/', async (req, res) => {
@@ -389,6 +379,7 @@ router.post('/api/posts', async (req, res) => {
     }
 });
 
+// Update post
 router.put('/api/posts/:id', async (req, res) => {
     const client = await pool.connect();
     try {
@@ -484,6 +475,7 @@ router.put('/api/posts/:id', async (req, res) => {
     }
 });
 
+// Delete post
 router.delete('/api/posts/:id', async (req, res) => {
     const client = await pool.connect();
     try {
@@ -518,6 +510,7 @@ router.put('/api/comments/:id/:action', async (req, res) => {
     }
 });
 
+// Delete comment
 router.delete('/api/comments/:id', async (req, res) => {
     try {
         await pool.query('DELETE FROM comments WHERE id = $1', [req.params.id]);
@@ -542,6 +535,7 @@ router.post('/api/categories', async (req, res) => {
     }
 });
 
+// Update category
 router.put('/api/categories/:id', async (req, res) => {
     try {
         await pool.query(
@@ -555,6 +549,7 @@ router.put('/api/categories/:id', async (req, res) => {
     }
 });
 
+// Delete category
 router.delete('/api/categories/:id', async (req, res) => {
     const { id } = req.params;
     try {
@@ -599,6 +594,7 @@ router.post('/api/tags', async (req, res) => {
     }
 });
 
+// Update tag
 router.put('/api/tags/:id', async (req, res) => {
     try {
         await pool.query('UPDATE tags SET name = $1 WHERE id = $2', [req.body.name, req.params.id]);
@@ -609,6 +605,7 @@ router.put('/api/tags/:id', async (req, res) => {
     }
 });
 
+// Delete tag
 router.delete('/api/tags/:id', async (req, res) => {
     try {
         await pool.query('DELETE FROM tags WHERE id = $1', [req.params.id]);
@@ -619,4 +616,41 @@ router.delete('/api/tags/:id', async (req, res) => {
     }
 });
 
+// Download all data
+router.get('/api/download-all-data', async (req, res) => {
+    try {
+        const [
+            posts,
+            categories,
+            tags,
+            comments,
+            postCategories,
+            postTags
+        ] = await Promise.all([
+            pool.query('SELECT * FROM Posts'),
+            pool.query('SELECT * FROM Categories'),
+            pool.query('SELECT * FROM Tags'),
+            pool.query('SELECT * FROM Comments'),
+            pool.query('SELECT * FROM Post_Categories'),
+            pool.query('SELECT * FROM Post_Tags')
+        ]);
+
+        const blogData = {
+            posts: posts.rows,
+            categories: categories.rows,
+            tags: tags.rows,
+            comments: comments.rows,
+            postCategories: postCategories.rows,
+            postTags: postTags.rows
+        };
+
+        res.setHeader('Content-Type', 'application/json');
+        res.setHeader('Content-Disposition', 'attachment; filename="blog_data.json"');
+        res.send(JSON.stringify(blogData, null, 2));
+
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ success: false, error: 'Failed to download blog data' });
+    }
+});
 export default router;
