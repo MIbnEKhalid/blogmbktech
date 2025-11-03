@@ -238,7 +238,10 @@
 
             <div class="post-footer">
                 <a href="/post/{{this.slug}}" class="read-more">Read More</a>
-                <span class="comments-count">{{this.comment_count}} comments</span>
+                <div class="post-stats">
+                    <span class="comments-count"><i class="fas fa-comment"></i> {{this.comment_count}}</span>
+                    <span class="views-count"><i class="fas fa-eye"></i> {{this.views}}</span>
+                </div>
             </div>
         </article>
         {{/each}}

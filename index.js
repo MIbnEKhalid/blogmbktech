@@ -10,6 +10,9 @@ import blogRouter from './routes/blog.js';
 import dashboardRouter from './routes/dashboard.js';
 import compression from "compression";
 import rateLimit from 'express-rate-limit';
+import cookieParser from "cookie-parser";
+import helmet from 'helmet';
+import csurf from 'csurf';
 
 dotenv.config();
 
@@ -19,7 +22,27 @@ const __dirname = path.dirname(__filename);
 const server = express();
 server.set('trust proxy', 1);
 
+server.use((req, res, next) => {
+    const start = Date.now();
+    res.on('finish', () => {
+        const duration = Date.now() - start;
+        console.log(`${req.method} ${req.originalUrl} - ${res.statusCode} [${duration}ms]`);
+    });
+    next();
+});
+
 server.use(compression());
+
+// Security Middleware
+server.use(helmet({
+    contentSecurityPolicy: {
+        directives: {
+            ...helmet.contentSecurityPolicy.getDefaultDirectives(),
+            "script-src": ["'self'", "'unsafe-inline'", "https://cdnjs.cloudflare.com"], // Allow inline scripts for now
+            "img-src": ["'self'", "data:", "https://*"], // Allow images from self, data URIs, and any HTTPS source
+        },
+    },
+}));
 
 // Rate limiting: general limiter for typical browsing/API usage and a stricter
 // limiter for dashboard (admin) routes.
@@ -78,7 +101,20 @@ server.use("/", express.static(path.join(__dirname, "public"), {
 
 server.use(express.json());
 server.use(express.urlencoded({ extended: true }));
+server.use(cookieParser());
 
+// Session middleware
+server.use(mbkauthe);
+
+// CSRF Protection
+const csrfProtection = csurf({ cookie: true });
+server.use(csrfProtection);
+
+// Make CSRF token available to all views
+server.use((req, res, next) => {
+    res.locals.csrfToken = req.csrfToken();
+    next();
+});
 
 // Configure Handlebars (single setup)
 server.engine("handlebars", engine({
@@ -262,8 +298,6 @@ server.set("views", [
   path.join(__dirname, "views"),
   path.join(__dirname, "node_modules/mbkauthe/views"),
 ]);
-
-server.use(mbkauthe);
 
 // Apply general limiter to application routes (after static assets are served)
 server.use(generalLimiter);

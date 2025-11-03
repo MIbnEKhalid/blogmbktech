@@ -42,7 +42,8 @@ CREATE TABLE Posts (
     slug VARCHAR(255) UNIQUE,
     status VARCHAR(20) NOT NULL DEFAULT 'draft',  -- 'draft', 'published', 'private'
     published BOOLEAN DEFAULT FALSE,
-    preview_image TEXT
+    preview_image TEXT,
+    views INTEGER DEFAULT 0
 );
 
 -- Tags table
@@ -120,6 +121,7 @@ CREATE INDEX idx_posts_slug ON Posts(slug);
 CREATE INDEX idx_posts_username ON Posts("UserName");
 CREATE INDEX idx_posts_created_at ON Posts(created_at DESC);
 CREATE INDEX idx_posts_status_created_at ON Posts(status, created_at DESC);
+CREATE INDEX idx_posts_views ON Posts(views);
 
 -- Categories Table Indexes
 CREATE INDEX idx_categories_name ON Categories(name);

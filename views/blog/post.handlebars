@@ -311,6 +311,11 @@
                     <i class="fas fa-clock" style="color: var(--accent);"></i>
                     {{formatReadingTime post.content_markdown}}
                 </span>
+                <span style="color: var(--text-light); opacity: 0.7;">•</span>
+                <span style="display: flex; align-items: center; gap: 0.3rem;">
+                    <i class="fas fa-eye" style="color: var(--accent);"></i>
+                    <span id="post-views">{{post.views}}</span> views
+                </span>
             </div>
             <div style="margin-top: 0.5rem;">
                 in {{#each post.category_names as |category|}}

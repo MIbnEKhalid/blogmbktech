@@ -236,6 +236,8 @@
                 <select id="sortFilter" class="form-select">
                     <option value="date-desc">Date (Newest)</option>
                     <option value="date-asc">Date (Oldest)</option>
+                    <option value="views-desc">Views (Most)</option>
+                    <option value="views-asc">Views (Least)</option>
                     <option value="title">Title</option>
                 </select>
             </div>
@@ -252,13 +254,14 @@
                     <th>Category</th>
                     <th>Created</th>
                     <th>Author</th>
+                    <th>Views</th>
                     <th>Status</th>
                     <th>Actions</th>
                 </tr>
             </thead>
             <tbody>
                 {{#each posts}}
-                <tr data-created-at="{{created_at}}">
+                <tr data-created-at="{{created_at}}" data-views="{{views}}">
                     <td style="width: 100px;">
                         {{#if preview_image}}
                         <img src="{{preview_image}}" alt="Preview" class="post-preview-img">
@@ -293,6 +296,9 @@
                     </td>
                     <td>
                         <div style="font-size: 0.875rem; color: var(--text);">{{author_name}}</div>
+                    </td>
+                    <td>
+                        <div style="font-size: 0.875rem; color: var(--text);">{{views}}</div>
                     </td>
                     <td>
                         <span
@@ -371,6 +377,12 @@
                     const aDate = new Date(a.getAttribute('data-created-at'));
                     const bDate = new Date(b.getAttribute('data-created-at'));
                     return sortFilter === 'date-desc' ? bDate - aDate : aDate - bDate;
+                }
+                case 'views-desc':
+                case 'views-asc': {
+                    const aViews = parseInt(a.getAttribute('data-views'), 10);
+                    const bViews = parseInt(b.getAttribute('data-views'), 10);
+                    return sortFilter === 'views-desc' ? bViews - aViews : aViews - bViews;
                 }
                 case 'title': {
                     const aTitle = a.querySelector('td:nth-child(2) div:first-child').textContent.trim().toLowerCase();

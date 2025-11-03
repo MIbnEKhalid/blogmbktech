@@ -4,6 +4,8 @@ import slugify from 'slugify';
 import { validateSessionAndRole } from 'mbkauthe';
 import { marked } from 'marked';
 import Prism from 'prismjs';
+import { JSDOM } from 'jsdom';
+import DOMPurify from 'dompurify';
 
 // Configure marked with syntax highlighting
 marked.setOptions({
@@ -16,6 +18,9 @@ marked.setOptions({
     breaks: true,
     gfm: true
 });
+
+const window = new JSDOM('').window;
+const purify = DOMPurify(window);
 
 const router = express.Router();
 
@@ -440,9 +445,52 @@ router.get('/post/:slug', async (req, res) => {
             }
         }
 
+        // Handle view count update
+        const postId = post.rows[0].id.toString();
+        let viewedPosts = [];
+        if (req.cookies.viewed_posts) {
+            try {
+                viewedPosts = JSON.parse(req.cookies.viewed_posts);
+            } catch (e) {
+                console.error('Error parsing viewed_posts cookie:', e);
+                // The cookie is invalid, so we'll just use an empty array
+            }
+        }
+
+        if (!viewedPosts.includes(postId)) {
+            viewedPosts.push(postId);
+            if (viewedPosts.length > 200) { // Keep cookie size bounded
+                viewedPosts.splice(0, viewedPosts.length - 200);
+            }
+            // Determine deployment flag robustly: prefer direct env IS_DEPLOYED, otherwise parse mbkautheVar JSON if present
+            const isDeployed = (() => {
+                try {
+                    if (process.env.mbkautheVar) {
+                        const parsed = typeof process.env.mbkautheVar === 'string' ? JSON.parse(process.env.mbkautheVar) : process.env.mbkautheVar;
+                        return parsed && parsed.IS_DEPLOYED === 'true';
+                    }
+                } catch (e) {
+                    console.error('Error parsing mbkautheVar:', e);
+                }
+                return false;
+            })();
+            res.cookie('viewed_posts', JSON.stringify(viewedPosts), {
+                maxAge: 365 * 24 * 60 * 60 * 1000, // 1 year
+                httpOnly: true,
+                sameSite: 'lax',
+                secure: !!isDeployed
+            });
+            // Update view count in DB after response is sent
+            res.on('finish', () => {
+                pool.query('UPDATE Posts SET views = views + 1 WHERE id = $1', [postId])
+                    .catch(err => console.error('Error updating view count:', err));
+            });
+        }
+
         // Process markdown content to HTML for display
         if (post.rows[0].content_markdown) {
-            post.rows[0].content_html = marked(post.rows[0].content_markdown);
+            const dirtyHtml = marked(post.rows[0].content_markdown);
+            post.rows[0].content_html = purify.sanitize(dirtyHtml);
         } else {
             post.rows[0].content_html = post.rows[0].content || '';
         }
@@ -504,6 +552,10 @@ router.get('/post/:slug', async (req, res) => {
 
         comments.rows.forEach(comment => {
             comment.replyCount = comments.rows.filter(reply => reply.parent_id === comment.id).length;
+            comment.content = purify.sanitize(comment.content);
+            if (comment.parent_content) {
+                comment.parent_content = purify.sanitize(comment.parent_content);
+            }
         });
 
         const isLogin = !!req.session.user;
@@ -567,11 +619,13 @@ router.post('/post/:slug/comment', validateSessionAndRole("any"), async (req, re
         const username = req.session.user.username;
         console.log('Using username for comment:', username);
 
+        const sanitizedContent = purify.sanitize(content.trim());
+
         // Insert comment in one query
         await pool.query(
             `INSERT INTO Comments (content, "UserName", post_id, parent_id)
             VALUES ($1, $2, $3, $4)`,
-            [content.trim(), username, postId, parent_id || null]
+            [sanitizedContent, username, postId, parent_id || null]
         );
 
         res.redirect('/post/' + slug);
