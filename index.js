@@ -11,8 +11,6 @@ import dashboardRouter from './routes/dashboard.js';
 import compression from "compression";
 import rateLimit from 'express-rate-limit';
 import cookieParser from "cookie-parser";
-import helmet from 'helmet';
-import csurf from 'csurf';
 
 dotenv.config();
 
@@ -32,17 +30,6 @@ server.use((req, res, next) => {
 });
 
 server.use(compression());
-
-// Security Middleware
-server.use(helmet({
-    contentSecurityPolicy: {
-        directives: {
-            ...helmet.contentSecurityPolicy.getDefaultDirectives(),
-            "script-src": ["'self'", "'unsafe-inline'", "https://cdnjs.cloudflare.com"], // Allow inline scripts for now
-            "img-src": ["'self'", "data:", "https://*"], // Allow images from self, data URIs, and any HTTPS source
-        },
-    },
-}));
 
 // Rate limiting: general limiter for typical browsing/API usage and a stricter
 // limiter for dashboard (admin) routes.
@@ -105,16 +92,6 @@ server.use(cookieParser());
 
 // Session middleware
 server.use(mbkauthe);
-
-// CSRF Protection
-const csrfProtection = csurf({ cookie: true });
-server.use(csrfProtection);
-
-// Make CSRF token available to all views
-server.use((req, res, next) => {
-    res.locals.csrfToken = req.csrfToken();
-    next();
-});
 
 // Configure Handlebars (single setup)
 server.engine("handlebars", engine({
@@ -251,7 +228,7 @@ server.engine("handlebars", engine({
     },
     getCanonicalUrl: function (req, path) {
       const protocol = req.protocol || 'https';
-      const host = req.get('host') || 'blog.mbktechstudio.com';
+      const host = req.get('host') || 'blog.mbktech.org';
       return `${protocol}://${host}${path}`;
     },
     index: function (array, idx) {

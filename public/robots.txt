@@ -1,4 +1,4 @@
-# MBK Tech Studio Blog - Search Engine Crawler Instructions
+# MBKTech.org Blog - Search Engine Crawler Instructions
 # Generated for optimal SEO and crawler guidance
 
 User-agent: *
@@ -48,7 +48,7 @@ User-agent: SemrushBot
 Disallow: /
 
 # Sitemap locations
-Sitemap: https://blog.mbktechstudio.com/sitemap.xml
-Sitemap: https://blog.mbktechstudio.com/sitemap-posts.xml
-Sitemap: https://blog.mbktechstudio.com/sitemap-categories.xml
-Sitemap: https://blog.mbktechstudio.com/sitemap-tags.xml
+Sitemap: https://blog.mbktech.org/sitemap.xml
+Sitemap: https://blog.mbktech.org/sitemap-posts.xml
+Sitemap: https://blog.mbktech.org/sitemap-categories.xml
+Sitemap: https://blog.mbktech.org/sitemap-tags.xml

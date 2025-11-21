@@ -43,8 +43,8 @@ A powerful, SEO-optimized blogging platform built with Node.js and Express, feat
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/MIbnEKhalid/blog.mbktechstudio.git
-   cd blog.mbktechstudio
+   git clone https://github.com/MIbnEKhalid/blog.mbktech.git
+   cd blog.mbktech
    ```
 
 2. **Install dependencies**
@@ -134,7 +134,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ## 👤 Author
 
 **Muhammad Bin Khalid**
-- Website: [mbktechstudio.com](https://www.mbktechstudio.com)
+- Website: [mbktech.org](https://www.mbktech.org)
 - GitHub: [@MIbnEKhalid](https://github.com/MIbnEKhalid)
 
 ---

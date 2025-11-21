@@ -1,39 +1,39 @@
 {{#if (eq pageType "posts")}}
 {{#section 'styles'}}
 {{#if username}}
-<title>Posts by {{username}} - MBK Tech Studio Blog</title>
-<meta name="description" content="Read all blog posts written by {{username}} on MBK Tech Studio Blog">
+<title>Posts by {{username}} - MBK Tech Blog</title>
+<meta name="description" content="Read all blog posts written by {{username}} on MBK Tech Blog">
 <meta name="keywords" content="{{username}}, blog posts, author, technology">
-<meta property="og:title" content="Posts by {{username}} - MBK Tech Studio Blog" />
+<meta property="og:title" content="Posts by {{username}} - MBK Tech Blog" />
 <meta property="og:description" content="Read all blog posts written by {{username}}" />
 <meta property="og:type" content="website" />
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Posts by {{username}}">
-<meta name="twitter:description" content="Read all blog posts written by {{username}} on MBK Tech Studio Blog">
+<meta name="twitter:description" content="Read all blog posts written by {{username}} on MBK Tech Blog">
 <meta name="twitter:site" content="@ibnekhalid28">
 {{else if category}}
-<title>{{category.name}} - MBK Tech Studio Blog</title>
+<title>{{category.name}} - MBK Tech Blog</title>
 <meta name="description"
-    content="{{#if category.description}}{{category.description}}{{else}}Browse all {{category.name}} posts on MBK Tech Studio Blog{{/if}}">
+    content="{{#if category.description}}{{category.description}}{{else}}Browse all {{category.name}} posts on MBK Tech Blog{{/if}}">
 <meta name="keywords" content="{{category.name}}, blog posts, tutorials, technology">
-<meta property="og:title" content="{{category.name}} - MBK Tech Studio Blog" />
+<meta property="og:title" content="{{category.name}} - MBK Tech Blog" />
 <meta property="og:description"
     content="{{#if category.description}}{{category.description}}{{else}}Browse all {{category.name}} posts{{/if}}" />
 <meta property="og:type" content="website" />
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="{{category.name}} Posts">
-<meta name="twitter:description" content="Browse all {{category.name}} posts on MBK Tech Studio Blog">
+<meta name="twitter:description" content="Browse all {{category.name}} posts on MBK Tech Blog">
 <meta name="twitter:site" content="@ibnekhalid28">
 {{else}}
-<title>Posts tagged with "{{tag.name}}" - MBK Tech Studio Blog</title>
-<meta name="description" content="Browse all posts tagged with {{tag.name}} on MBK Tech Studio Blog">
+<title>Posts tagged with "{{tag.name}}" - MBK Tech Blog</title>
+<meta name="description" content="Browse all posts tagged with {{tag.name}} on MBK Tech Blog">
 <meta name="keywords" content="{{tag.name}}, blog posts, tutorials, technology">
-<meta property="og:title" content="Posts tagged with '{{tag.name}}' - MBK Tech Studio Blog" />
+<meta property="og:title" content="Posts tagged with '{{tag.name}}' - MBK Tech Blog" />
 <meta property="og:description" content="Browse all posts tagged with {{tag.name}}" />
 <meta property="og:type" content="website" />
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Posts tagged with {{tag.name}}">
-<meta name="twitter:description" content="Browse all posts tagged with {{tag.name}} on MBK Tech Studio Blog">
+<meta name="twitter:description" content="Browse all posts tagged with {{tag.name}} on MBK Tech Blog">
 <meta name="twitter:site" content="@ibnekhalid28">
 {{/if}}
 {{/section}}

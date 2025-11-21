@@ -1,9 +1,9 @@
-# security.txt for blog.mbktechstudio.com
+# security.txt for blog.mbktech.org
 
-Contact: mailto:support@mbktechstudio.com
-Contact: https://mbktechstudio.com/Support
+Contact: mailto:support@mbktech.org
+Contact: https://mbktech.org/Support
 
-Developer Contact: mailto:support@mbktechstudio.com
-Contact: https://mbktechstudio.com/Support
+Developer Contact: mailto:support@mbktech.org
+Contact: https://mbktech.org/Support
 
 Preferred-Languages: en

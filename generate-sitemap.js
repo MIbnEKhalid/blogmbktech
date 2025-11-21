@@ -7,7 +7,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 // Base URL - update this to your actual domain
-const BASE_URL = process.env.BASE_URL || 'https://blog.mbktechstudio.com';
+const BASE_URL = process.env.BASE_URL || 'https://blog.mbktech.org';
 const PUBLIC_DIR = path.join(__dirname, 'public');
 
 async function generateSitemaps() {
