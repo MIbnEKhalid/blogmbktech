@@ -6,6 +6,7 @@ import multer from 'multer';
 import crypto from 'crypto';
 import path from 'path';
 import rateLimit from 'express-rate-limit';
+import { GoogleGenerativeAI } from "@google/generative-ai";
 import { uploadFile, downloadFile, deleteFile, deleteFiles, listfiles, getFileMetadata, fileExists, checkR2Health, generateSignedUrl } from './pool.js';
 
 // File signature validation for images
@@ -1024,4 +1025,103 @@ router.post('/api/r2/list-images', uploadRateLimiter, upload.none(), async (req,
     }
 });
 
+
+
+
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+
+router.post('/api/ai-assist', async (req, res) => {
+    // 1. Security Check
+    if (!req.session?.user) return res.status(401).json({ success: false, error: 'Unauthorized' });
+    if (!process.env.GEMINI_API_KEY) return res.status(500).json({ success: false, error: 'Gemini API Key missing' });
+
+    const { action, prompt, context } = req.body;
+
+    try {
+        // *** CRITICAL FIX: Use "gemini-1.5-flash" for high free tier limits ***
+        // Do NOT use "gemini-2.5-flash" or experimental versions
+        const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash-lite" });
+
+        let systemInstruction = "";
+        let userPrompt = prompt;
+        let isJsonMode = false;
+
+        /* --- PROMPT ENGINEERING --- */
+
+        if (action === 'tags') {
+            systemInstruction = `You are an SEO Specialist. Return exactly 5 to 8 comma-separated tags (lowercase). No hash symbols.`;
+            userPrompt = `Generate tags for: "${context.content.substring(0, 3000)}..."`;
+        } 
+        else if (action === 'categories') {
+            const catsResult = await pool.query('SELECT id, name FROM Categories');
+            const availableCats = catsResult.rows.map(c => ({ id: c.id, name: c.name }));
+            
+            isJsonMode = true;
+            systemInstruction = `You are a Classifier. Return JSON: { "categoryIds": [int] }. Match content to specific categories.`;
+            userPrompt = `Categories: ${JSON.stringify(availableCats)}. Content: "${context.content.substring(0, 1500)}..."`;
+        }
+        else if (action === 'title') {
+            systemInstruction = `You are a Blog Title Expert. Write ONE catchy, SEO-friendly title. No quotes. Max 60 chars.`;
+            userPrompt = context.currentTitle 
+                ? `Rewrite: "${context.currentTitle}"`
+                : `Generate title for: "${context.content.substring(0, 1000)}..."`;
+        }
+        else if (action === 'excerpt') {
+            systemInstruction = `You are an Editor. Write a 2-sentence SEO summary/hook. Max 160 chars.`;
+            userPrompt = `Summarize: "${context.content.substring(0, 2000)}..."`;
+        }
+        else if (action === 'content') {
+            systemInstruction = `You are a Technical Writer. Write in Markdown. Use ## for headers. Keep flow natural.`;
+            userPrompt = context.content 
+                ? `Improve grammar and formatting: "${context.content}"`
+                : `Write blog intro for title: "${context.title}"`;
+        }
+        else {
+            systemInstruction = `You are a helpful AI blog assistant. Be concise.`;
+            userPrompt = `Context: [Title: ${context.title}]\nRequest: ${prompt}`;
+        }
+
+        /* --- EXECUTE --- */
+        const generationConfig = {
+            responseMimeType: isJsonMode ? "application/json" : "text/plain",
+            temperature: 0.7,
+        };
+
+        const result = await model.generateContent({
+            contents: [{ role: 'user', parts: [{ text: systemInstruction + "\n\n" + userPrompt }] }],
+            generationConfig: generationConfig
+        });
+
+        const response = await result.response;
+        let reply = response.text();
+
+        // Cleanup
+        if (isJsonMode) {
+            reply = reply.replace(/```json|```/g, '').trim();
+            try {
+                reply = JSON.parse(reply);
+            } catch (e) {
+                console.error("JSON Parse Error", e);
+                reply = { categoryIds: [] }; // Fallback
+            }
+        } else {
+            reply = reply.replace(/^"|"$/g, '').trim(); // Remove surrounding quotes
+        }
+
+        res.json({ success: true, data: reply });
+
+    } catch (err) {
+        console.error('Gemini API Error:', err.message);
+        
+        // Handle Rate Limits gracefully
+        if (err.status === 429 || err.message.includes('429')) {
+            return res.status(429).json({ 
+                success: false, 
+                error: 'AI Usage Limit Reached. Please wait 1 minute before trying again.' 
+            });
+        }
+
+        res.status(500).json({ success: false, error: 'AI Service Error. Please try again later.' });
+    }
+});
 export default router;

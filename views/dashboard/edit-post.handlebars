@@ -1,6 +1,7 @@
 {{#section 'styles'}}
 <title>Dashboard - Edit Post</title>
 <style>
+    /* --- CORE VARIABLES --- */
     :root {
         --primary-color: #2196F3;
         --primary-light: #e3f2fd;
@@ -8,1041 +9,482 @@
         --success-color: #28a745;
         --border-color: #e0e0e0;
         --text-muted: #6c757d;
-        --box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        --box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        --dark: #1e1e2d;
+        --darker: #151521;
+        --text-light: #e0e0e0;
+        --ai-gradient: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
     }
 
+    /* --- LAYOUT & FORM STYLES --- */
     .edit-post-form {
-        max-width: 1200px;
+        max-width: 1400px;
         margin: 0 auto;
         padding: 2rem;
         background: var(--dark);
         border-radius: 8px;
         box-shadow: var(--box-shadow);
+        color: var(--text-light);
     }
 
     .form-header {
         display: flex;
         justify-content: space-between;
         align-items: center;
-        margin-bottom: 2.5rem;
+        margin-bottom: 2rem;
         padding-bottom: 1rem;
-        border-bottom: 2px solid var(--border-color);
-        gap: 1rem;
+        border-bottom: 1px solid var(--border-color);
     }
 
-    .form-header h1 {
-        margin: 0;
-        font-size: 1.8rem;
-        color: var(--text-light);
-    }
+    .form-header h1 { margin: 0; font-size: 1.8rem; font-weight: 600; }
 
-    .form-group {
-        margin-bottom: 1.5rem;
-    }
+    .form-group { margin-bottom: 1.5rem; }
 
     .form-label {
         display: block;
         margin-bottom: 0.5rem;
         font-weight: 500;
-        color: var(--text-light);
+        color: #a1a1aa;
+        font-size: 0.9rem;
     }
 
     .form-control {
         width: 100%;
-        padding: 0.75rem;
-        border: 2px solid var(--border-color);
+        padding: 0.8rem;
+        border: 1px solid #2d2d3b;
         border-radius: 6px;
         background-color: var(--darker);
         color: var(--text-light);
-        transition: border-color 0.2s, box-shadow 0.2s;
-        font-size: 16px;
+        transition: all 0.2s;
+        font-size: 1rem;
     }
 
     .form-control:focus {
         border-color: var(--primary-color);
         outline: none;
-        box-shadow: 0 0 0 3px rgba(33, 150, 243, 0.2);
+        box-shadow: 0 0 0 2px rgba(33, 150, 243, 0.2);
     }
 
-    .tag-management {
+    textarea.form-control { resize: vertical; line-height: 1.6; }
+
+    /* --- TAG & CATEGORY MANAGEMENT (OLD FUNCTIONALITY) --- */
+    .tag-management, .category-management {
         display: flex;
         flex-direction: column;
-        gap: 1rem;
+        gap: 0.5rem;
     }
 
-    .tag-input {
+    .tag-input, .category-input {
         display: flex;
         flex-wrap: wrap;
         gap: 0.5rem;
-        padding: 0.75rem;
-        border: 2px solid var(--border-color);
+        padding: 0.5rem;
+        border: 1px solid #2d2d3b;
         border-radius: 6px;
         background-color: var(--darker);
-        min-height: 45px;
-    }
-
-    .tag-selector {
-        display: flex;
-        gap: 0.5rem;
+        min-height: 46px;
         align-items: center;
     }
 
-    .tag-selector select {
-        flex: 1;
-    }
-
-    .tag-selector input {
-        flex: 1;
-    }
-
-    .custom-tag-input {
+    .tag-selector, .category-selector {
         display: flex;
         gap: 0.5rem;
         align-items: center;
-        margin-top: 0.5rem;
+        position: relative;
     }
 
-    .custom-tag-input input {
-        flex: 1;
-    }
-
-    .category-management {
-        display: flex;
-        flex-direction: column;
-        gap: 1rem;
-    }
-
-    .category-input {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 0.5rem;
-        padding: 0.75rem;
-        border: 2px solid var(--border-color);
-        border-radius: 6px;
-        background-color: var(--darker);
-        min-height: 45px;
-    }
-
-    .category-selector {
-        display: flex;
-        gap: 0.5rem;
-        align-items: center;
-    }
-
-    .category-selector select {
-        flex: 1;
-    }
-
-    .category-selector input {
-        flex: 1;
-    }
+    .tag-selector input, .category-selector input { flex: 1; }
 
     .search-results {
         position: absolute;
         top: 100%;
         left: 0;
         right: 0;
-        background-color: var(--darker);
-        border: 2px solid var(--primary-color);
+        background-color: #2d2d3b;
+        border: 1px solid var(--primary-color);
         border-top: none;
         border-radius: 0 0 6px 6px;
         max-height: 200px;
         overflow-y: auto;
-        z-index: 1000;
+        z-index: 100;
         display: none;
     }
-
-    /* Mobile Responsive */
-    @media (max-width: 1024px) {
-        .edit-post-form {
-            padding: 1.5rem;
-        }
-
-        .form-header h1 {
-            font-size: 1.5rem;
-        }
-    }
-
-    @media (max-width: 768px) {
-        .edit-post-form {
-            padding: 1rem;
-            border-radius: 4px;
-        }
-
-        .form-header {
-            flex-direction: column;
-            align-items: stretch;
-            margin-bottom: 1.5rem;
-            padding-bottom: 0.75rem;
-        }
-
-        .form-header h1 {
-            font-size: 1.25rem;
-        }
-
-        .form-header .btn {
-            width: 100%;
-        }
-
-        .form-group {
-            margin-bottom: 1rem;
-        }
-
-        .form-label {
-            font-size: 0.9rem;
-            margin-bottom: 0.35rem;
-        }
-
-        .form-control {
-            padding: 0.6rem;
-            font-size: 16px;
-        }
-
-        .tag-selector,
-        .category-selector {
-            flex-wrap: wrap;
-            gap: 0.25rem;
-        }
-
-        .tag-selector select,
-        .tag-selector input,
-        .category-selector select,
-        .category-selector input {
-            min-width: 100px;
-        }
-
-        .custom-tag-input {
-            flex-direction: column;
-            gap: 0.25rem;
-        }
-
-        .custom-tag-input input {
-            width: 100%;
-        }
-
-        .custom-tag-input button {
-            width: 100%;
-        }
-    }
-
-    @media (max-width: 480px) {
-        .edit-post-form {
-            padding: 0.75rem;
-        }
-
-        .form-header {
-            flex-direction: column;
-            gap: 0.5rem;
-        }
-
-        .form-header h1 {
-            font-size: 1.1rem;
-        }
-
-        .form-header .btn {
-            font-size: 0.8rem;
-            padding: 0.5rem 0.75rem;
-        }
-
-        .form-group {
-            margin-bottom: 0.75rem;
-        }
-
-        .form-label {
-            font-size: 0.8rem;
-        }
-
-        .form-control {
-            padding: 0.5rem;
-            font-size: 16px;
-        }
-
-        .tag-input,
-        .category-input {
-            padding: 0.5rem;
-            gap: 0.25rem;
-            min-height: 40px;
-        }
-
-        .tag-selector,
-        .category-selector {
-            gap: 0.25rem;
-        }
-
-        .tag-selector select,
-        .tag-selector input,
-        .category-selector select,
-        .category-selector input {
-            min-width: 70px;
-            font-size: 0.85rem;
-            padding: 0.4rem;
-        }
-
-        button {
-            padding: 0.5rem 0.75rem;
-            font-size: 0.75rem;
-        }
-    }
-
-    .search-results.show {
-        display: block;
-    }
+    .search-results.show { display: block; }
 
     .search-result-item {
         padding: 0.75rem;
         cursor: pointer;
         color: var(--text-light);
-        border-bottom: 1px solid var(--border-color);
-        transition: background-color 0.2s;
+        border-bottom: 1px solid #3f3f4e;
     }
+    .search-result-item:hover { background-color: var(--primary-color); color: white; }
 
-    .search-result-item:hover {
-        background-color: var(--primary-light);
+    .tag, .category {
+        background-color: rgba(33, 150, 243, 0.15);
         color: var(--primary-color);
-    }
-
-    .search-result-item:last-child {
-        border-bottom: none;
-    }
-
-    .search-container {
-        position: relative;
-        flex: 1;
-    }
-
-    .tag {
-        background-color: var(--primary-light);
-        color: var(--primary-color);
-        padding: 0.4rem 0.8rem;
+        padding: 0.3rem 0.8rem;
         border-radius: 20px;
         display: flex;
         align-items: center;
         gap: 0.5rem;
-        font-size: 0.9rem;
-        transition: all 0.2s;
+        font-size: 0.85rem;
+        border: 1px solid rgba(33, 150, 243, 0.3);
     }
+    
+    .category { background-color: rgba(40, 167, 69, 0.15); color: #4ade80; border-color: rgba(40, 167, 69, 0.3); }
 
-    .tag:hover {
-        background-color: #bbdefb;
-    }
-
-    .category {
-        background-color: #e8f5e9;
-        color: #2e7d32;
-        padding: 0.4rem 0.8rem;
-        border-radius: 20px;
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-        font-size: 0.9rem;
-        transition: all 0.2s;
-    }
-
-    .category:hover {
-        background-color: #c8e6c9;
-    }
-
-    .category button {
+    .tag button, .category button {
         background: none;
         border: none;
-        color: #2e7d32;
         cursor: pointer;
         padding: 0;
-        font-size: 1rem;
+        color: inherit;
+        font-size: 1.1rem;
+        line-height: 1;
         display: flex;
         align-items: center;
-        transition: transform 0.2s;
     }
+    .tag button:hover, .category button:hover { opacity: 0.7; }
 
-    .category button:hover {
-        transform: scale(1.2);
-    }
-
-    .tag button {
-        background: none;
-        border: none;
-        color: var(--primary-color);
-        cursor: pointer;
-        padding: 0;
-        font-size: 1rem;
-        display: flex;
-        align-items: center;
-        transition: transform 0.2s;
-    }
-
-    .tag button:hover {
-        transform: scale(1.2);
-    }
-
+    /* --- IMAGE UPLOAD SYSTEM (OLD FUNCTIONALITY) --- */
     .preview-image-container {
-        border: 2px solid var(--border-color);
+        border: 1px solid #2d2d3b;
         border-radius: 8px;
         padding: 1.5rem;
         background-color: var(--darker);
-        transition: border-color 0.2s;
     }
-
-    .preview-image-container:hover {
-        border-color: var(--primary-color);
-    }
-
     .preview-image {
-        max-width: 300px;
-        max-height: 200px;
+        max-width: 100%;
+        max-height: 300px;
         border-radius: 8px;
-        object-fit: cover;
+        object-fit: contain;
         display: block;
-        box-shadow: var(--box-shadow);
-    }
-
-    .current-preview {
-        display: inline-block;
-        margin-bottom: 1rem;
-    }
-
-    .text-muted {
-        color: var(--text-muted) !important;
-        font-size: 0.9rem;
-        margin-top: 0.5rem;
-    }
-
-    .mt-3 {
-        margin-top: 1rem !important;
-    }
-
-    .action-buttons {
-        display: flex;
-        gap: 1rem;
-        justify-content: flex-end;
-        margin-top: 2.5rem;
-        padding-top: 1.5rem;
-        border-top: 2px solid var(--border-color);
-    }
-
-    .btn {
-        padding: 0.75rem 1.5rem;
-        font-size: 1rem;
-        font-weight: 500;
-        border-radius: 6px;
-        transition: all 0.2s;
-        cursor: pointer;
-        display: inline-flex;
-        align-items: center;
-        gap: 0.5rem;
-    }
-
-    .btn-primary {
-        background-color: var(--primary-color);
-        border: none;
-        color: white;
-    }
-
-    .btn-primary:hover {
-        background-color: #1976d2;
-        transform: translateY(-1px);
-    }
-
-    .btn-secondary {
-        background-color: transparent;
-        border: 2px solid var(--border-color);
-        color: var(--text-light);
-    }
-
-    .btn-secondary:hover {
-        border-color: var(--primary-color);
-        color: var(--primary-color);
-    }
-
-    .editor-controls {
-        display: flex;
-        gap: 0.5rem;
-        align-items: center;
-        flex-wrap: wrap;
-        margin-bottom: 0.75rem;
-    }
-
-    .editor-wrapper {
-        position: relative;
-    }
-
-    .editor-wrapper .editor-controls {
-        position: absolute;
-        top: 10px;
-        right: 10px;
-        z-index: 10;
-        margin-bottom: 0;
-        max-width: calc(100% - 20px);
-    }
-
-    #previewBtn {
-        background-color: var(--darker);
-        border: 2px solid var(--border-color);
-        color: var(--text-light);
-        font-size: 0.9rem;
-        padding: 0.5rem 1rem;
-        border-radius: 4px;
-        transition: all 0.2s;
-        white-space: nowrap;
-    }
-
-    #previewBtn:hover {
-        border-color: var(--primary-color);
-        color: var(--primary-color);
-    }
-
-    #previewBtn.active {
-        background-color: var(--primary-color);
-        border-color: var(--primary-color);
-        color: white;
-    }
-
-    .toolbar-btn {
-        background-color: var(--darker);
-        border: 2px solid var(--border-color);
-        color: var(--text-light);
-        font-size: 0.9rem;
-        padding: 0.5rem;
-        border-radius: 4px;
-        transition: all 0.2s;
-        cursor: pointer;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        min-width: 36px;
-        height: 36px;
-    }
-
-    .toolbar-btn:hover {
-        border-color: var(--primary-color);
-        color: var(--primary-color);
-    }
-
-    #markdownPreview {
-        background-color: var(--darker);
-        border: 2px solid var(--border-color);
-        border-radius: 6px;
-        padding: 1.5rem;
         margin-top: 1rem;
-        line-height: 1.8;
-        min-height: 300px;
-        max-height: 600px;
-        overflow-y: auto;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.2);
     }
-
-    #markdownPreview.fullscreen {
-        position: fixed;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        max-height: 100vh;
-        margin: 0;
-        border-radius: 0;
-        z-index: 1000;
-        padding: 3rem;
-    }
-
-    .split-view {
-        display: flex;
-        gap: 1rem;
-        flex-direction: row;
-    }
-
-    .split-view #editorContainer {
-        flex: 1;
-        min-width: 0;
-    }
-
-    .split-view #content {
-        width: 100%;
-    }
-
-    .split-view #markdownPreview {
-        flex: 1;
-        margin-top: 0;
-        min-width: 0;
-    }
-
-    /* Mobile Responsive for Editor */
-    @media (max-width: 768px) {
-        .editor-wrapper .editor-controls {
-            position: relative;
-            top: 0;
-            right: 0;
-            margin-bottom: 0.75rem;
-            gap: 0.35rem;
-            justify-content: flex-start;
-            max-width: 100%;
-        }
-
-        .toolbar-btn {
-            min-width: 32px;
-            height: 32px;
-            padding: 0.4rem;
-            font-size: 0.85rem;
-        }
-
-        #previewBtn {
-            padding: 0.4rem 0.75rem;
-            font-size: 0.85rem;
-        }
-
-        #previewBtn i {
-            display: none;
-        }
-
-        #previewBtn::after {
-            content: 'Preview';
-        }
-
-        #previewBtn.active::after {
-            content: 'Edit';
-        }
-
-        .split-view {
-            flex-direction: column;
-            gap: 0.5rem;
-        }
-
-        .split-view #markdownPreview {
-            max-height: 300px;
-        }
-
-        #markdownPreview {
-            padding: 1rem;
-            min-height: 200px;
-            max-height: 400px;
-        }
-
-        #content {
-            font-size: 13px;
-        }
-    }
-
-    @media (max-width: 480px) {
-        .editor-controls {
-            gap: 0.25rem;
-        }
-
-        .toolbar-btn {
-            min-width: 28px;
-            height: 28px;
-            padding: 0.3rem;
-            font-size: 0.75rem;
-            border-width: 1px;
-        }
-
-        #previewBtn {
-            padding: 0.3rem 0.6rem;
-            font-size: 0.75rem;
-            border-width: 1px;
-        }
-
-        #markdownPreview {
-            padding: 0.75rem;
-            font-size: 0.9rem;
-            min-height: 150px;
-            max-height: 300px;
-        }
-
-        #content {
-            font-size: 12px;
-            padding: 0.6rem;
-        }
-
-        .split-view #markdownPreview {
-            max-height: 200px;
-        }
-    }
-
-    .toggle-switch {
-        position: relative;
-        display: inline-block;
-        width: 60px;
-        height: 34px;
-    }
-
-    .toggle-switch input {
-        opacity: 0;
-        width: 0;
-        height: 0;
-    }
-
-    .slider {
-        position: absolute;
-        cursor: pointer;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background-color: #ccc;
-        transition: .4s;
-        border-radius: 34px;
-    }
-
-    .slider:before {
-        position: absolute;
-        content: "";
-        height: 26px;
-        width: 26px;
-        left: 4px;
-        bottom: 4px;
-        background-color: white;
-        transition: .4s;
-        border-radius: 50%;
-    }
-
-    input:checked+.slider {
-        background-color: #2196F3;
-    }
-
-    input:checked+.slider:before {
-        transform: translateX(26px);
-    }
-
-    /* Image Upload Styles */
     .upload-tabs {
         display: flex;
-        border-bottom: 2px solid var(--border-color);
+        border-bottom: 1px solid #2d2d3b;
         margin-bottom: 1rem;
     }
-
     .tab-btn {
         background: none;
         border: none;
         padding: 0.75rem 1.5rem;
         color: var(--text-muted);
         cursor: pointer;
-        border-bottom: 3px solid transparent;
-        transition: all 0.3s ease;
+        border-bottom: 2px solid transparent;
         font-weight: 500;
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
+        transition: all 0.2s;
     }
-
-    .tab-btn:hover {
-        color: var(--primary-color);
-        background-color: rgba(33, 150, 243, 0.1);
-    }
-
-    .tab-btn.active {
-        color: var(--primary-color);
-        border-bottom-color: var(--primary-color);
-        background-color: rgba(33, 150, 243, 0.1);
-    }
-
-    .tab-content {
-        transition: opacity 0.3s ease;
-    }
-
+    .tab-btn:hover { color: var(--text-light); }
+    .tab-btn.active { color: var(--primary-color); border-bottom-color: var(--primary-color); }
+    
     .upload-area {
-        border: 2px dashed var(--border-color);
+        border: 2px dashed #3f3f4e;
         border-radius: 8px;
         padding: 3rem 2rem;
         text-align: center;
         cursor: pointer;
-        transition: all 0.3s ease;
-        background-color: rgba(33, 150, 243, 0.05);
+        transition: all 0.2s;
     }
-
-    .upload-area:hover {
-        border-color: var(--primary-color);
-        background-color: rgba(33, 150, 243, 0.1);
-    }
-
-    .upload-area.dragover {
-        border-color: var(--primary-color);
-        background-color: rgba(33, 150, 243, 0.15);
-        transform: scale(1.02);
-    }
-
-    .upload-placeholder i {
-        color: var(--primary-color);
-        margin-bottom: 1rem;
-    }
-
-    .upload-placeholder p {
-        font-size: 1.1rem;
-        color: var(--text-muted);
-        margin-bottom: 0.5rem;
-    }
-
-    .upload-progress {
-        background-color: var(--light);
-        border-radius: 20px;
-        height: 8px;
-        position: relative;
-        overflow: hidden;
-        margin-top: 1rem;
-    }
-
-    .upload-progress .progress-bar {
-        background: linear-gradient(90deg, var(--primary-color), var(--secondary));
-        height: 100%;
-        border-radius: 20px;
-        transition: width 0.3s ease;
-        width: 0%;
-    }
-
-    .upload-progress .progress-text {
-        position: absolute;
-        top: -25px;
-        right: 0;
-        font-size: 0.9rem;
-        color: var(--primary-color);
-        font-weight: 600;
-    }
-
-    .upload-status {
-        margin-top: 1rem;
-        padding: 0.75rem;
-        border-radius: 6px;
-        font-size: 0.95rem;
-    }
-
-    .upload-status.success {
-        background-color: rgba(40, 167, 69, 0.1);
-        border: 1px solid var(--success-color);
-        color: var(--success-color);
-    }
-
-    .upload-status.error {
-        background-color: rgba(220, 53, 69, 0.1);
-        border: 1px solid var(--danger-color);
-        color: var(--danger-color);
-    }
-
-    .preview-image-container .preview-image {
-        max-width: 300px;
-        max-height: 200px;
-        border-radius: 8px;
-        box-shadow: var(--box-shadow);
-    }
-
-    @media (max-width: 768px) {
-        .upload-area {
-            padding: 2rem 1rem;
-        }
-
-        .upload-placeholder p {
-            font-size: 1rem;
-        }
-
-        .tab-btn {
-            padding: 0.6rem 1rem;
-            font-size: 0.9rem;
-        }
-    }
-
-    /* Image Browser Styles */
-    .image-browser {
-        border: 1px solid var(--border-color);
-        border-radius: 8px;
-        overflow: hidden;
-        background: var(--darker);
-    }
-
-    .browser-header {
-        padding: 1rem;
-        background: var(--dark);
-        border-bottom: 1px solid var(--border-color);
-        display: flex;
-        gap: 1rem;
-        align-items: center;
-    }
-
-    .search-input {
-        flex: 1;
-        padding: 0.5rem;
-        border: 1px solid var(--border-color);
-        border-radius: 4px;
-        background: var(--darker);
-        color: var(--text);
-        font-size: 0.9rem;
-    }
-
-    .search-input:focus {
-        outline: none;
-        border-color: var(--primary-color);
-        box-shadow: 0 0 0 2px rgba(33, 150, 243, 0.2);
-    }
-
-    .refresh-btn {
-        padding: 0.5rem 1rem;
-        background: var(--primary-color);
-        color: white;
-        border: none;
-        border-radius: 4px;
-        cursor: pointer;
-        font-size: 0.9rem;
-        transition: background-color 0.3s ease;
-    }
-
-    .refresh-btn:hover {
-        background: var(--primary-dark);
-    }
-
+    .upload-area:hover { border-color: var(--primary-color); background: rgba(33,150,243,0.05); }
+    .upload-placeholder { color: var(--text-muted); }
+    
+    /* Image Grid for Browser */
     .image-grid {
-        padding: 1rem;
         display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-        gap: 1rem;
-        max-height: 400px;
+        grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+        gap: 10px;
+        max-height: 300px;
         overflow-y: auto;
+        padding: 10px;
     }
-
     .image-item {
         position: relative;
         aspect-ratio: 1;
-        border: 2px solid transparent;
-        border-radius: 8px;
+        border-radius: 4px;
         overflow: hidden;
         cursor: pointer;
-        transition: all 0.3s ease;
-        background: var(--dark);
+        border: 2px solid transparent;
     }
+    .image-item img { width: 100%; height: 100%; object-fit: cover; }
+    .image-item:hover { border-color: var(--primary-color); }
+    .image-item.selected { border-color: var(--success-color); box-shadow: 0 0 0 2px var(--success-color); }
 
-    .image-item:hover {
-        border-color: var(--primary-color);
-        transform: scale(1.05);
-    }
-
-    .image-item.selected {
-        border-color: var(--success-color);
-        box-shadow: 0 0 0 3px rgba(67, 233, 123, 0.3);
-    }
-
-    .image-item img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-        display: block;
-    }
-
-    .image-item .image-name {
-        position: absolute;
-        bottom: 0;
-        left: 0;
-        right: 0;
-        background: linear-gradient(transparent, rgba(0, 0, 0, 0.8));
-        color: white;
-        padding: 0.5rem 0.3rem 0.3rem;
-        font-size: 0.75rem;
-        word-break: break-all;
-        line-height: 1.2;
-    }
-
-    .loading-spinner {
-        grid-column: 1 / -1;
-        text-align: center;
-        padding: 2rem;
-        color: var(--text-muted);
-    }
-
-    .loading-spinner i {
-        font-size: 2rem;
+    /* --- MARKDOWN EDITOR (OLD FUNCTIONALITY) --- */
+    .editor-controls {
+        display: flex;
+        gap: 0.5rem;
+        align-items: center;
+        flex-wrap: wrap;
         margin-bottom: 0.5rem;
-        color: var(--primary-color);
+        background: #2d2d3b;
+        padding: 0.5rem;
+        border-radius: 6px 6px 0 0;
     }
-
-    .browser-pagination {
-        padding: 1rem;
-        text-align: center;
-        border-top: 1px solid var(--border-color);
-    }
-
-    .load-more-btn {
-        padding: 0.75rem 1.5rem;
-        background: var(--primary-color);
-        color: white;
-        border: none;
+    .toolbar-btn {
+        background: transparent;
+        border: 1px solid transparent;
+        color: var(--text-light);
+        padding: 0.4rem;
         border-radius: 4px;
         cursor: pointer;
-        font-size: 0.9rem;
-        transition: background-color 0.3s ease;
+        min-width: 32px;
+        height: 32px;
+        display: flex; justify-content: center; align-items: center;
+    }
+    .toolbar-btn:hover { background: rgba(255,255,255,0.1); }
+    
+    #editorContainer textarea {
+        border-top-left-radius: 0;
+        border-top-right-radius: 0;
+        font-family: 'Fira Code', monospace;
     }
 
-    .load-more-btn:hover {
-        background: var(--primary-dark);
-    }
-
-    .load-more-btn:disabled {
-        background: var(--text-muted);
-        cursor: not-allowed;
-    }
-
-    /* Custom Modal Styles (replacing Bootstrap) */
-    .custom-modal {
+    #markdownPreview {
+        background-color: var(--darker);
+        border: 1px solid #2d2d3b;
+        border-radius: 6px;
+        padding: 2rem;
+        min-height: 400px;
         display: none;
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: rgba(0, 0, 0, 0.8);
-        z-index: 10000;
-        backdrop-filter: blur(5px);
+        overflow-y: auto;
     }
+    /* Split View Logic */
+    .split-view { display: flex; gap: 1rem; }
+    .split-view #editorContainer { flex: 1; }
+    .split-view #markdownPreview { flex: 1; display: block; margin-top: 0; height: 100%; }
 
-    .custom-modal.active {
+    /* --- AI HYBRID SYSTEM STYLES (NEW) --- */
+    
+    /* 1. Input Groups for AI Buttons */
+    .input-group {
+        position: relative;
+        display: flex;
+        width: 100%;
+        align-items: stretch;
+    }
+    .input-group .form-control {
+        border-top-right-radius: 0;
+        border-bottom-right-radius: 0;
+        flex: 1;
+    }
+    
+    /* AI Trigger Button */
+    .btn-ai {
+        background: var(--ai-gradient);
+        border: none;
+        color: white;
+        padding: 0 1.2rem;
+        border-top-right-radius: 6px;
+        border-bottom-right-radius: 6px;
+        cursor: pointer;
+        font-size: 0.9rem;
+        font-weight: 600;
         display: flex;
         align-items: center;
-        justify-content: center;
+        gap: 0.6rem;
+        white-space: nowrap;
+        transition: all 0.2s;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    }
+    .btn-ai:hover {
+        filter: brightness(1.15);
+        transform: translateY(-1px);
+        box-shadow: 0 4px 8px rgba(99, 102, 241, 0.4);
+    }
+    .btn-ai:active { transform: translateY(0); }
+    .btn-ai:disabled { filter: grayscale(0.8); cursor: wait; }
+    
+    /* Specific styling for standalone AI buttons (Tags/Cats) */
+    .btn-ai.standalone {
+        border-radius: 4px;
+        height: 46px; /* Match input height */
     }
 
-    .modal-content {
-        background: var(--dark);
-        border-radius: 8px;
-        max-width: 90%;
-        max-height: 90%;
-        overflow: auto;
-        position: relative;
+    /* 2. Floating Chat Window */
+    .ai-window {
+        position: fixed;
+        bottom: 30px;
+        right: 30px;
+        width: 400px;
+        height: 600px;
+        background-color: var(--dark);
+        border: 1px solid #3f3f4e;
+        border-radius: 12px;
+        box-shadow: 0 20px 50px rgba(0,0,0,0.7);
+        display: none;
+        flex-direction: column;
+        z-index: 9999;
+        resize: both; /* Allow user resizing */
+        overflow: hidden;
+        min-width: 320px;
+        min-height: 400px;
+        backdrop-filter: blur(10px);
     }
 
-    .modal-header {
+    .ai-window.active {
+        display: flex;
+        animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    @keyframes slideUp {
+        from { transform: translateY(40px); opacity: 0; }
+        to { transform: translateY(0); opacity: 1; }
+    }
+
+    .ai-header {
         padding: 1rem;
-        border-bottom: 1px solid var(--border-color);
+        background: var(--ai-gradient);
+        color: white;
         display: flex;
         justify-content: space-between;
         align-items: center;
+        cursor: grab;
+        flex-shrink: 0;
+        user-select: none;
+    }
+    .ai-header:active { cursor: grabbing; }
+
+    .ai-body {
+        flex: 1;
+        overflow-y: auto;
+        padding: 1rem;
+        background: var(--darker);
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+        scroll-behavior: smooth;
     }
 
-    .modal-title {
-        margin: 0;
-        color: var(--text);
+    .ai-footer {
+        padding: 1rem;
+        background: var(--dark);
+        border-top: 1px solid #2d2d3b;
+        flex-shrink: 0;
+        display: flex;
+        gap: 0.8rem;
+        align-items: flex-end;
     }
 
-    .modal-close {
-        background: none;
-        border: none;
-        color: var(--text);
-        font-size: 1.5rem;
+    /* Auto-expanding textarea */
+    .ai-input {
+        width: 100%;
+        background: #2d2d3b;
+        border: 1px solid transparent;
+        border-radius: 8px;
+        color: var(--text-light);
+        padding: 0.8rem;
+        font-family: inherit;
+        resize: none; /* Auto-handled by JS */
+        min-height: 44px;
+        max-height: 150px;
+        font-size: 0.95rem;
+        line-height: 1.4;
+        transition: border-color 0.2s;
+    }
+    .ai-input:focus { outline: none; border-color: #8b5cf6; background: #323242; }
+
+    /* Chat Bubbles */
+    .ai-msg {
+        padding: 0.8rem 1rem;
+        border-radius: 10px;
+        font-size: 0.95rem;
+        line-height: 1.6;
+        max-width: 90%;
+        word-wrap: break-word;
+        position: relative;
+        animation: fadeIn 0.2s ease;
+    }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+
+    .ai-msg.user {
+        align-self: flex-end;
+        background: #4f46e5;
+        color: white;
+        border-bottom-right-radius: 2px;
+    }
+
+    .ai-msg.bot {
+        align-self: flex-start;
+        background: #2d2d3b;
+        border: 1px solid #3f3f4e;
+        color: var(--text-light);
+        border-bottom-left-radius: 2px;
+    }
+
+    /* Apply Button inside Chat */
+    .ai-apply-btn {
+        margin-top: 0.8rem;
+        padding: 0.5rem 1rem;
+        background: rgba(16, 185, 129, 0.2);
+        border: 1px solid #10b981;
+        border-radius: 6px;
+        color: #10b981;
+        font-size: 0.85rem;
+        font-weight: 600;
         cursor: pointer;
-        padding: 0;
-        width: 30px;
-        height: 30px;
         display: flex;
         align-items: center;
+        gap: 0.5rem;
+        width: 100%;
         justify-content: center;
+        transition: all 0.2s;
     }
+    .ai-apply-btn:hover { background: #10b981; color: white; }
 
-    .modal-close:hover {
-        color: var(--danger-color);
+    /* Action Buttons */
+    .action-buttons {
+        display: flex;
+        gap: 1rem;
+        justify-content: flex-end;
+        margin-top: 3rem;
+        padding-top: 1.5rem;
+        border-top: 1px solid #2d2d3b;
     }
+    .btn {
+        padding: 0.8rem 2rem;
+        font-size: 1rem;
+        font-weight: 600;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+    .btn-secondary { background: transparent; border: 1px solid #3f3f4e; color: #a1a1aa; }
+    .btn-secondary:hover { border-color: var(--text-light); color: var(--text-light); }
+    .btn-primary { background: var(--primary-color); border: none; color: white; }
+    .btn-primary:hover { filter: brightness(1.1); }
 
-    .modal-body {
-        padding: 1rem;
+    /* Notifications */
+    .notification {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: var(--success-color);
+        color: white;
+        padding: 1rem 1.5rem;
+        border-radius: 6px;
+        z-index: 10000;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        animation: slideIn 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-weight: 500;
     }
+    .notification.error { background: var(--danger-color); }
 </style>
 {{/section}}
 
 <div class="content-card">
     <form class="edit-post-form" id="editPostForm">
+        
+        <!-- Header -->
         <div class="form-header">
             <h1>{{#if post}}Edit Post{{else}}Create New Post{{/if}}</h1>
             <div class="status-controls">
-                <select name="status" class="form-control">
+                <select name="status" class="form-control" style="width: auto; min-width: 150px;">
                     <option value="draft" {{#if (eq post.status 'draft' )}}selected{{/if}}>Draft</option>
                     <option value="published" {{#if (eq post.status 'published' )}}selected{{/if}}>Published</option>
                     <option value="private" {{#if (eq post.status 'private' )}}selected{{/if}}>Private</option>
@@ -1050,145 +492,133 @@
             </div>
         </div>
 
+        <!-- 1. TITLE FIELD (With Chat AI) -->
         <div class="form-group">
-            <label class="form-label" for="title">Title</label>
-            <input type="text" class="form-control" id="title" name="title" value="{{post.title}}" required>
+            <label class="form-label" for="title">Post Title</label>
+            <div class="input-group">
+                <input type="text" class="form-control" id="title" name="title" value="{{post.title}}" placeholder="Enter an engaging title..." required>
+                <!-- Triggers Chat Window -->
+                <button type="button" class="btn-ai" onclick="openAiChat('title')">
+                    <i class="fas fa-magic"></i> AI Title
+                </button>
+            </div>
         </div>
 
+        <!-- 2. EXCERPT FIELD (With Chat AI) -->
         <div class="form-group">
-            <label class="form-label" for="excerpt">Excerpt</label>
-            <textarea class="form-control" id="excerpt" name="excerpt" rows="3">{{post.excerpt}}</textarea>
+            <label class="form-label" for="excerpt">Short Excerpt (SEO)</label>
+            <div class="input-group">
+                <textarea class="form-control" id="excerpt" name="excerpt" rows="3" placeholder="A brief summary for search engines...">{{post.excerpt}}</textarea>
+                <!-- Triggers Chat Window -->
+                <button type="button" class="btn-ai" onclick="openAiChat('excerpt')" style="height: auto;">
+                    <i class="fas fa-magic"></i> AI Excerpt
+                </button>
+            </div>
         </div>
 
+        <!-- 3. IMAGE SYSTEM (Restored Old Functionality) -->
         <div class="form-group">
-            <label class="form-label">Preview Image</label>
+            <label class="form-label">Featured Image</label>
             <div class="preview-image-container">
                 {{#if post.preview_image}}
                 <div class="current-preview mb-3">
-                    <img src="{{post.preview_image}}" alt="Current preview" class="preview-image">
+                    <img src="{{post.preview_image}}" alt="Current preview" class="preview-image" id="mainPreviewImg">
                 </div>
                 {{/if}}
                 
-                {{! Image Upload Tab Navigation }}
-                <div class="upload-tabs mb-3">
-                    <button type="button" class="tab-btn active" data-tab="url" onclick="switchImageTab('url')">
-                        <i class="fas fa-link"></i> URL
-                    </button>
-                    <button type="button" class="tab-btn" data-tab="upload" onclick="switchImageTab('upload')">
-                        <i class="fas fa-upload"></i> Upload
-                    </button>
-                    <button type="button" class="tab-btn" data-tab="browse" onclick="switchImageTab('browse')">
-                        <i class="fas fa-images"></i> Browse
-                    </button>
+                <!-- Tabs -->
+                <div class="upload-tabs">
+                    <button type="button" class="tab-btn active" data-tab="url" onclick="switchImageTab('url')"><i class="fas fa-link"></i> Image URL</button>
+                    <button type="button" class="tab-btn" data-tab="upload" onclick="switchImageTab('upload')"><i class="fas fa-upload"></i> Upload File</button>
+                    <button type="button" class="tab-btn" data-tab="browse" onclick="switchImageTab('browse')"><i class="fas fa-images"></i> Browse Gallery</button>
                 </div>
 
-                {{! URL Input Tab }}
+                <!-- URL Tab -->
                 <div id="urlTab" class="tab-content active">
-                    <div class="preview-url-input">
-                        <input type="url" id="previewImage" name="preview_image" class="form-control"
-                            placeholder="Enter image URL" value="{{post.preview_image}}" onchange="previewImageUrl(this)">
-                        <small class="text-muted">Enter a valid image URL (https://example.com/image.jpg)</small>
-                    </div>
+                    <input type="url" id="previewImage" name="preview_image" class="form-control" value="{{post.preview_image}}" onchange="previewImageUrl(this)" placeholder="https://example.com/image.jpg">
+                    <small style="color:#6c757d; display:block; margin-top:0.5rem;">Paste an external URL or use the upload tab.</small>
                 </div>
 
-                {{! Upload Tab }}
+                <!-- Upload Tab -->
                 <div id="uploadTab" class="tab-content" style="display: none;">
-                    <div class="upload-area" onclick="document.getElementById('imageUpload').click()">
+                    <div class="upload-area" onclick="document.getElementById('imageUpload').click()" id="dropZone">
                         <input type="file" id="imageUpload" name="image" accept="image/*" style="display: none;" onchange="handleImageUpload(this)">
                         <div class="upload-placeholder">
-                            <i class="fas fa-cloud-upload-alt fa-3x"></i>
-                            <p>Click to select an image or drag and drop</p>
-                            <small class="text-muted">Max size: 20MB • JPG, PNG, GIF, WebP only • Files are validated for security</small>
+                            <i class="fas fa-cloud-upload-alt fa-3x" style="margin-bottom: 1rem; color: var(--primary-color);"></i>
+                            <p>Click or Drag image here to upload</p>
+                            <small>Max 10MB (JPG, PNG, WEBP)</small>
                         </div>
-                        <div id="uploadProgress" class="upload-progress" style="display: none;">
-                            <div class="progress-bar"></div>
-                            <span class="progress-text">0%</span>
+                        <div id="uploadProgress" class="upload-progress" style="display: none; margin-top: 1rem;">
+                            <div class="progress-bar" style="height: 4px; background: var(--primary-color); width: 0%;"></div>
                         </div>
                     </div>
-                    <div id="uploadStatus" class="upload-status"></div>
                 </div>
 
-                {{! Browse Images Tab }}
+                <!-- Browse Tab -->
                 <div id="browseTab" class="tab-content" style="display: none;">
                     <div class="image-browser">
                         <div class="browser-header">
-                            <input type="text" id="imageSearch" placeholder="Search images..." class="search-input">
-                            <button type="button" id="refreshImages" class="refresh-btn">
-                                <i class="fas fa-sync"></i> Refresh
-                            </button>
+                            <input type="text" id="imageSearch" placeholder="Search gallery..." class="search-input" onkeyup="filterImages(this.value)">
+                            <button type="button" class="btn btn-secondary" onclick="loadBucketImages(true)" style="padding: 0.4rem 0.8rem;"><i class="fas fa-sync"></i></button>
                         </div>
                         <div id="imageGrid" class="image-grid">
-                            <div class="loading-spinner">
-                                <i class="fas fa-spinner fa-spin"></i>
-                                <p>Loading images...</p>
-                            </div>
-                        </div>
-                        <div class="browser-pagination">
-                            <button type="button" id="loadMoreImages" class="load-more-btn" style="display: none;">
-                                Load More Images
-                            </button>
+                            <!-- Populated via JS -->
+                            <div style="text-align:center; padding: 2rem; color: #666;">Click refresh to load images</div>
                         </div>
                     </div>
                 </div>
 
-                {{! Image Preview }}
+                <!-- Live Preview Container -->
                 <div id="imagePreview" class="mt-3" style="display: none;">
-                    <img src="" alt="Image preview" class="preview-image">
+                    <img src="" class="preview-image">
                 </div>
             </div>
         </div>
 
+        <!-- 4. MARKDOWN EDITOR (With Chat AI + Old Toolbar) -->
         <div class="form-group">
-            <label class="form-label" for="content">Content (Markdown)</label>
+            <label class="form-label" for="content">Post Content (Markdown)</label>
+            
             <div class="editor-controls">
-                <button type="button" class="toolbar-btn" title="Bold (Ctrl+B)" onclick="insertMarkdown('**', '**')">
-                    <i class="fas fa-bold"></i>
-                </button>
-                <button type="button" class="toolbar-btn" title="Italic (Ctrl+I)" onclick="insertMarkdown('*', '*')">
-                    <i class="fas fa-italic"></i>
-                </button>
-                <button type="button" class="toolbar-btn" title="Heading" onclick="insertMarkdown('## ', '')">
-                    <i class="fas fa-heading"></i>
-                </button>
-                <button type="button" class="toolbar-btn" title="Link" onclick="insertLink()">
-                    <i class="fas fa-link"></i>
-                </button>
-                <button type="button" class="toolbar-btn" title="Code Block" onclick="insertCodeBlock()">
-                    <i class="fas fa-code"></i>
-                </button>
-                <button type="button" class="toolbar-btn" title="Unordered List" onclick="insertMarkdown('- ', '')">
-                    <i class="fas fa-list-ul"></i>
-                </button>
-                <button type="button" class="toolbar-btn" title="Ordered List" onclick="insertMarkdown('1. ', '')">
-                    <i class="fas fa-list-ol"></i>
-                </button>
-                <button type="button" class="toolbar-btn" title="Quote" onclick="insertMarkdown('> ', '')">
-                    <i class="fas fa-quote-right"></i>
-                </button>
-                <button type="button" class="toolbar-btn" title="Split View" id="splitViewBtn" onclick="toggleSplitView()">
+                <!-- Standard Toolbar -->
+                <button type="button" class="toolbar-btn" title="Bold" onclick="insertMarkdown('**', '**')"><i class="fas fa-bold"></i></button>
+                <button type="button" class="toolbar-btn" title="Italic" onclick="insertMarkdown('*', '*')"><i class="fas fa-italic"></i></button>
+                <button type="button" class="toolbar-btn" title="H2" onclick="insertMarkdown('## ', '')"><i class="fas fa-heading"></i></button>
+                <button type="button" class="toolbar-btn" title="Link" onclick="insertLink()"><i class="fas fa-link"></i></button>
+                <button type="button" class="toolbar-btn" title="Code Block" onclick="insertCodeBlock()"><i class="fas fa-code"></i></button>
+                <button type="button" class="toolbar-btn" title="List" onclick="insertMarkdown('- ', '')"><i class="fas fa-list-ul"></i></button>
+                
+                <!-- Split View Toggle -->
+                <button type="button" class="toolbar-btn" title="Split Preview" onclick="toggleSplitView()" style="margin-left: 10px; border-left: 1px solid #444;">
                     <i class="fas fa-columns"></i>
                 </button>
-                <button type="button" id="previewBtn" class="btn btn-secondary" onclick="togglePreview()">
-                    <i class="fas fa-eye"></i> Preview
+
+                <!-- AI Writer Button -->
+                <button type="button" class="btn-ai" onclick="openAiChat('content')" style="border-radius:4px; margin-left: auto; padding: 0.4rem 1rem;">
+                    <i class="fas fa-robot"></i> AI Writer
                 </button>
             </div>
+
             <div style="position: relative;">
-                <div id="editorContainer">
-                    <textarea class="form-control" id="content" name="content" rows="15"
-                        style="font-family: 'Courier New', monospace; font-size: 14px;">{{#if post.content_markdown}}{{post.content_markdown}}{{else}}{{post.content}}{{/if}}</textarea>
-                </div>
-                <div id="markdownPreview" class="markdown-content" style="display: none;">
+                <!-- Main Editor Area -->
+                <div id="editorWrapper">
+                    <div id="editorContainer">
+                        <textarea class="form-control" id="content" name="content" rows="20" style="font-family: 'Fira Code', monospace; line-height: 1.6;">{{#if post.content_markdown}}{{post.content_markdown}}{{else}}{{post.content}}{{/if}}</textarea>
+                    </div>
+                    <!-- Live Preview Area -->
+                    <div id="markdownPreview" class="markdown-content"></div>
                 </div>
             </div>
             <small style="color: #6c757d; margin-top: 0.5rem; display: block;">
-                <i class="fas fa-info-circle"></i> Write your content in Markdown format. 
-                Use the toolbar for quick formatting or keyboard shortcuts (Ctrl+B for bold, Ctrl+I for italic).
+                Supports standard Markdown. Use Ctrl+B for Bold, Ctrl+I for Italic.
             </small>
         </div>
 
+        <!-- 5. CATEGORIES (Auto Action) -->
         <div class="form-group">
-            <label class="form-label">Categories <span style="color: #dc3545;">*</span></label>
+            <label class="form-label">Categories <span style="color: var(--danger-color);">*</span></label>
             <div class="category-management">
+                <!-- Visual Chips Container -->
                 <div class="category-input" id="categoryContainer">
                     {{#each post.categoryIds}}
                     <span class="category" data-category-id="{{this}}">
@@ -1197,1161 +627,690 @@
                     </span>
                     {{/each}}
                 </div>
+                
+                <!-- Search & Select & AI -->
                 <div class="category-selector">
-                    <div class="search-container">
-                        <input type="text" id="categorySearch" class="form-control" placeholder="Search categories...">
-                        <div class="search-results" id="categoryResults"></div>
-                    </div>
+                    <input type="text" id="categorySearch" class="form-control" placeholder="Search or select category...">
+                    
+                    <!-- Hidden select for data reference -->
                     <select id="categorySelect" class="form-control" style="display: none;">
-                        <option value="">Select a category...</option>
-                        {{#each categories}}
-                        <option value="{{id}}">{{name}}</option>
-                        {{/each}}
+                        <option value="">Select...</option>
+                        {{#each categories}}<option value="{{id}}">{{name}}</option>{{/each}}
                     </select>
-                    <button type="button" id="addCategory" class="btn btn-secondary">Add Category</button>
+                    
+                    <!-- Manual Add Button -->
+                    <button type="button" id="manualAddCategory" class="btn btn-secondary" style="margin-left: 10px;">Add</button>
+
+                    <!-- DIRECT AI ACTION BUTTON -->
+                    <button type="button" class="btn-ai standalone" onclick="triggerAutoAction('categories')" style="margin-left: 10px;">
+                        <i class="fas fa-project-diagram"></i> Auto-Classify
+                    </button>
+                    
+                    <!-- Search Results Dropdown -->
+                    <div class="search-results" id="categoryResults"></div>
                 </div>
-                <small class="text-muted">Select categories to assign to this post. At least one category is
-                    required.</small>
             </div>
         </div>
 
+        <!-- 6. TAGS (Auto Action) -->
         <div class="form-group">
             <label class="form-label">Tags</label>
             <div class="tag-management">
+                <!-- Visual Chips Container -->
                 <div class="tag-input" id="tagContainer">
                     {{#each post.tags}}
-                    <span class="tag">
-                        {{this}}
-                        <button type="button" class="remove-tag">&times;</button>
-                    </span>
+                    <span class="tag">{{this}}<button type="button" class="remove-tag">&times;</button></span>
                     {{/each}}
                 </div>
+                
+                <!-- Search & Select & AI -->
                 <div class="tag-selector">
-                    <div class="search-container">
-                        <input type="text" id="tagSearch" class="form-control" placeholder="Search tags...">
-                        <div class="search-results" id="tagResults"></div>
-                    </div>
-                    <select id="tagSelect" class="form-control" style="display: none;">
-                        <option value="">Select a tag...</option>
-                        {{#each availableTags}}
-                        <option value="{{name}}">{{name}}</option>
-                        {{/each}}
-                    </select>
-                    <button type="button" id="addSelectedTag" class="btn btn-secondary">Add Tag</button>
+                    <input type="text" id="tagSearch" class="form-control" placeholder="Type tag and press enter...">
+                    
+                    <!-- Manual Add Button -->
+                    <button type="button" id="manualAddTag" class="btn btn-secondary" style="margin-left: 10px;">Add</button>
+
+                    <!-- DIRECT AI ACTION BUTTON -->
+                    <button type="button" class="btn-ai standalone" onclick="triggerAutoAction('tags')" style="margin-left: 10px;">
+                        <i class="fas fa-tags"></i> Auto-Tag
+                    </button>
+                    
+                    <div class="search-results" id="tagResults"></div>
                 </div>
             </div>
         </div>
 
+        <!-- Submit Actions -->
         <div class="action-buttons">
             <button type="button" class="btn btn-secondary" onclick="window.history.back()">Cancel</button>
-            <button type="submit" class="btn btn-primary">
-                {{#if post}}Update{{else}}Create{{/if}} Post
+            <button type="submit" class="btn btn-primary" id="saveBtn">
+                <i class="fas fa-save"></i> {{#if post}}Update Post{{else}}Publish Post{{/if}}
             </button>
         </div>
     </form>
 </div>
 
+<!-- ========================================== -->
+<!-- FLOATING AI CHAT WINDOW -->
+<!-- ========================================== -->
+<div class="ai-window" id="aiWindow">
+    <!-- Drag Handle -->
+    <div class="ai-header" id="aiHeader">
+        <span style="display:flex; align-items:center; gap:10px;"><i class="fas fa-robot"></i> AI Assistant</span>
+        <button type="button" id="closeAi" style="background:none; border:none; color:white; cursor:pointer; font-size:1.2rem; padding:0 5px;">&times;</button>
+    </div>
+    
+    <!-- Chat Body -->
+    <div class="ai-body" id="aiBody">
+        <div class="ai-msg bot">
+            <strong>Hello!</strong> I can help you write titles, refine excerpts, or expand your content.<br><br>
+            Click a button in the form to start, or type a request below.
+        </div>
+    </div>
+    
+    <!-- Footer Input -->
+    <div class="ai-footer">
+        <textarea id="aiInput" class="ai-input" placeholder="Type instructions here..." rows="1"></textarea>
+        <button type="button" id="aiSend" class="btn btn-primary" style="padding:0; width:44px; height:44px; border-radius:50%; display:flex; align-items:center; justify-content:center;">
+            <i class="fas fa-paper-plane"></i>
+        </button>
+    </div>
+</div>
+
 {{#section 'scripts'}}
 <script>
     (function () {
-        // Store original values for change detection
-        {{#if post}}
-        const originalPostData = {
-            title: {{#if post.title}}{{{jsonStringify post.title}}}{{else}}''{{/if}},
-            content: {{{jsonStringify post.content_markdown}}},
-            excerpt: {{#if post.excerpt}}{{{jsonStringify post.excerpt}}}{{else}}''{{/if}},
-            preview_image: {{#if post.preview_image}}{{{jsonStringify post.preview_image}}}{{else}}''{{/if}},
-            status: '{{post.status}}',
-            categories: [{{#each post.categoryIds}}{{this}}{{#unless @last}},{{/unless}}{{/each}}],
-            tags: [{{#each post.tags}}{{{jsonStringify this}}}{{#unless @last}},{{/unless}}{{/each}}]
-        };
-        {{/if}}
-        const tagContainer = document.getElementById('tagContainer');
-        const form = document.getElementById('editPostForm');
+        /* ==========================================================================
+           1. HYBRID AI SYSTEM LOGIC
+           ========================================================================== */
+        let currentAiContext = null; // 'title', 'excerpt', 'content'
 
-        // Check if required elements exist before adding event listeners
-        if (!tagContainer || !form) {
-            console.error('Required form elements not found');
-            return;
+        // A. OPEN CHAT WINDOW (For Text Fields)
+        window.openAiChat = function(action) {
+            currentAiContext = action;
+            const win = document.getElementById('aiWindow');
+            const input = document.getElementById('aiInput');
+            
+            // 1. Show Window
+            win.classList.add('active');
+            
+            // 2. Pre-fill Prompt based on action
+            let promptText = "";
+            if (action === 'title') {
+                promptText = "Generate title for this post based on the content.";
+            } else if (action === 'excerpt') {
+                promptText = "Summarize this post into a 2to5-sentence SEO excerpt.";
+            } else if (action === 'content') {
+                promptText = "Write an introduction paragraph for this post.";
+            }
+            
+            input.value = promptText;
+            
+            // Auto-resize the textarea
+            input.style.height = 'auto';
+            input.style.height = (input.scrollHeight) + 'px';
+            
+            input.focus();
+        };
+
+        // B. DIRECT ACTIONS (For Tags/Categories - No Chat)
+        window.triggerAutoAction = async function(action) {
+            const btn = event.currentTarget;
+            const originalHTML = btn.innerHTML;
+            
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> ...';
+            btn.disabled = true;
+
+            const context = {
+                content: document.getElementById('content').value,
+                title: document.getElementById('title').value
+            };
+
+            if(!context.content && !context.title) {
+                showNotification("Please write some content or a title first!", "error");
+                btn.innerHTML = originalHTML;
+                btn.disabled = false;
+                return;
+            }
+
+            try {
+                const response = await fetch('/dashboard/api/ai-assist', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action, context })
+                });
+                const res = await response.json();
+
+                if (!res.success) throw new Error(res.error);
+
+                if (action === 'tags') {
+                    // Expecting comma-separated string
+                    const tags = res.data.split(',');
+                    let count = 0;
+                    tags.forEach(t => {
+                        const cleanT = t.trim();
+                        if(cleanT) { addTag(cleanT); count++; }
+                    });
+                    showNotification(`Generated ${count} tags.`);
+                } 
+                else if (action === 'categories') {
+                    // Expecting { categoryIds: [] }
+                    const ids = res.data.categoryIds;
+                    if (ids && ids.length) {
+                        ids.forEach(id => addCategory(id));
+                        showNotification(`Selected ${ids.length} categories.`);
+                    } else {
+                        showNotification("No matching categories found in database.", "error");
+                    }
+                }
+            } catch (e) {
+                showNotification("AI Error: " + e.message, "error");
+            } finally {
+                btn.innerHTML = originalHTML;
+                btn.disabled = false;
+            }
+        };
+
+        // C. CHAT LOGIC (Send & Receive)
+        const aiInput = document.getElementById('aiInput');
+        const aiSend = document.getElementById('aiSend');
+        const aiBody = document.getElementById('aiBody');
+
+        // Auto-expand textarea logic
+        aiInput.addEventListener('input', function() {
+            this.style.height = 'auto';
+            this.style.height = (this.scrollHeight) + 'px';
+        });
+
+        async function sendChat() {
+            const text = aiInput.value.trim();
+            if(!text) return;
+
+            // 1. Add User Message
+            appendChatMsg(text, 'user');
+            aiInput.value = '';
+            aiInput.style.height = '44px'; // Reset height
+            
+            const loaderId = appendLoader();
+
+            // 2. Prepare Context (Current state of form)
+            const context = {
+                title: document.getElementById('title').value,
+                excerpt: document.getElementById('excerpt').value,
+                content: document.getElementById('content').value.substring(0, 3000), // Limit size for API token safety
+                currentTitle: document.getElementById('title').value,
+                currentExcerpt: document.getElementById('excerpt').value
+            };
+
+            // 3. Send API Request
+            try {
+                const response = await fetch('/dashboard/api/ai-assist', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        action: currentAiContext || 'chat', // Use context if set, else generic chat
+                        prompt: text, 
+                        context 
+                    })
+                });
+                const res = await response.json();
+                removeLoader(loaderId);
+
+                if (res.success) {
+                    // If we have a specific context (Title/Excerpt), show Apply button
+                    const showApply = !!currentAiContext;
+                    appendChatMsg(res.data, 'bot', showApply);
+                } else {
+                    appendChatMsg("Error: " + res.error, 'bot');
+                }
+            } catch (e) {
+                removeLoader(loaderId);
+                appendChatMsg("Network Connection Error", 'bot');
+            }
         }
 
-        // Handle predefined tags
-        const tagSelect = document.getElementById('tagSelect');
+        aiSend.addEventListener('click', sendChat);
+        aiInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendChat();
+            }
+        });
+
+        // UI Helpers for Chat
+        function appendChatMsg(text, sender, showApply = false) {
+            const div = document.createElement('div');
+            div.className = `ai-msg ${sender}`;
+            
+            // Convert newlines to breaks for display
+            div.innerHTML = text.replace(/\n/g, '<br>');
+
+            if (sender === 'bot' && showApply && currentAiContext) {
+                const btn = document.createElement('button');
+                btn.className = 'ai-apply-btn';
+                let label = "Apply";
+                if(currentAiContext === 'title') label = "Use this Title";
+                if(currentAiContext === 'excerpt') label = "Use this Excerpt";
+                if(currentAiContext === 'content') label = "Replace Content";
+                
+                btn.innerHTML = `<i class="fas fa-check"></i> ${label}`;
+                btn.onclick = () => applyToField(text);
+                
+                div.appendChild(document.createElement('br'));
+                div.appendChild(btn);
+            }
+            aiBody.appendChild(div);
+            // Scroll to bottom
+            aiBody.scrollTop = aiBody.scrollHeight;
+        }
+
+        function applyToField(text) {
+            // Basic cleanup: remove surrounding quotes if AI added them
+            const cleanText = text.replace(/^"|"$/g, '').trim();
+
+            if (currentAiContext === 'title') {
+                document.getElementById('title').value = cleanText;
+            } else if (currentAiContext === 'excerpt') {
+                document.getElementById('excerpt').value = cleanText;
+            } else if (currentAiContext === 'content') {
+                const editor = document.getElementById('content');
+                // Replace content entirely
+                editor.value = cleanText; 
+                // If live preview is active, update it
+                if(document.getElementById('markdownPreview').style.display !== 'none') {
+                    window.handleLivePreview();
+                }
+            }
+            showNotification(`${currentAiContext.toUpperCase()} Updated Successfully!`);
+        }
+
+        function appendLoader() {
+            const id = 'loader-' + Date.now();
+            const div = document.createElement('div');
+            div.id = id;
+            div.className = 'ai-msg bot';
+            div.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> AI is thinking...';
+            aiBody.appendChild(div);
+            aiBody.scrollTop = aiBody.scrollHeight;
+            return id;
+        }
+
+        function removeLoader(id) {
+            const el = document.getElementById(id);
+            if(el) el.remove();
+        }
+
+        // Draggable Window Logic
+        const header = document.getElementById('aiHeader');
+        const win = document.getElementById('aiWindow');
+        let isDragging = false, startX, startY, initialLeft, initialTop;
+
+        header.addEventListener('mousedown', (e) => {
+            if(e.target.id === 'closeAi') return;
+            isDragging = true;
+            startX = e.clientX;
+            startY = e.clientY;
+            const rect = win.getBoundingClientRect();
+            initialLeft = rect.left;
+            initialTop = rect.top;
+            header.style.cursor = 'grabbing';
+        });
+
+        document.addEventListener('mousemove', (e) => {
+            if(!isDragging) return;
+            const dx = e.clientX - startX;
+            const dy = e.clientY - startY;
+            win.style.left = `${initialLeft + dx}px`;
+            win.style.top = `${initialTop + dy}px`;
+            // Reset standard positioning
+            win.style.bottom = 'auto'; 
+            win.style.right = 'auto';
+        });
+
+        document.addEventListener('mouseup', () => { 
+            isDragging=false; 
+            header.style.cursor='move'; 
+        });
+        
+        document.getElementById('closeAi').addEventListener('click', () => {
+            win.classList.remove('active');
+            currentAiContext = null; 
+        });
+
+        /* ==========================================================================
+           2. EXISTING FUNCTIONALITY (RESTORED)
+           ========================================================================== */
+        
+        // --- TAGS LOGIC ---
+        const tagContainer = document.getElementById('tagContainer');
         const tagSearch = document.getElementById('tagSearch');
         const tagResults = document.getElementById('tagResults');
-        const addSelectedTag = document.getElementById('addSelectedTag');
+        const manualAddTagBtn = document.getElementById('manualAddTag');
+        
+        // All tags available (from server template)
+        const allTags = Array.from(document.querySelectorAll('#tagSelect option'))
+                             .map(opt => ({name: opt.text, value: opt.value}))
+                             .filter(t => t.value);
 
-        // Store all available tags
-        const allTags = Array.from(tagSelect.options)
-            .filter(option => option.value !== '')
-            .map(option => ({ value: option.value, text: option.text }));
-
-        if (tagSearch) {
-            tagSearch.addEventListener('input', (e) => {
-                filterAndShowTags(e.target.value);
-            });
-
-            // Close results when clicking outside
-            document.addEventListener('click', (e) => {
-                if (!e.target.closest('.search-container') && !e.target.closest('#tagResults')) {
-                    tagResults.classList.remove('show');
-                }
-            });
-
-            tagSearch.addEventListener('focus', () => {
-                if (tagSearch.value || allTags.length > 0) {
-                    filterAndShowTags(tagSearch.value);
-                }
-            });
-        }
-
-        function filterAndShowTags(searchTerm) {
-            const filtered = allTags.filter(tag =>
-                tag.text.toLowerCase().includes(searchTerm.toLowerCase())
-            );
-
-            tagResults.innerHTML = '';
-
-            if (filtered.length === 0) {
-                if (searchTerm) {
-                    tagResults.innerHTML = '<div class="search-result-item" style="color: var(--text-muted);">No tags found</div>';
-                }
-                tagResults.classList.toggle('show', searchTerm.length > 0);
-            } else {
-                filtered.forEach(tag => {
-                    const item = document.createElement('div');
-                    item.className = 'search-result-item';
-                    item.textContent = tag.text;
-                    item.addEventListener('click', () => {
-                        addTag(tag.value);
-                        tagSearch.value = '';
-                        tagResults.classList.remove('show');
-                    });
-                    tagResults.appendChild(item);
-                });
-                tagResults.classList.add('show');
-            }
-        }
-
-        if (addSelectedTag) {
-            addSelectedTag.addEventListener('click', () => {
-                // Find the first visible tag from search results
-                const visibleItems = tagResults.querySelectorAll('.search-result-item');
-                if (visibleItems.length > 0 && visibleItems[0].textContent !== 'No tags found') {
-                    visibleItems[0].click();
-                }
-            });
-        }
-
-        function addTag(text) {
-            if (!text || !tagContainer) return;
-
-            // Check if tag already exists
-            const existingTags = Array.from(tagContainer.getElementsByClassName('tag'))
-                .map(tag => tag.textContent.trim().replace('×', '').trim());
-
-            if (existingTags.includes(text)) {
-                return; // Don't add duplicate tags
-            }
-
+        window.addTag = function(text) {
+            if (!text) return;
+            text = text.replace(/['"]+/g, '').trim();
+            if(!text) return;
+            
+            // Prevent duplicates
+            const exists = Array.from(tagContainer.getElementsByClassName('tag')).some(t => t.innerText.replace('×','').trim() === text);
+            if (exists) return;
+            
             const tag = document.createElement('span');
             tag.className = 'tag';
-            tag.innerHTML = `
-            ${text}
-            <button type="button" class="remove-tag">&times;</button>
-        `;
+            tag.innerHTML = `${text}<button type="button" class="remove-tag">&times;</button>`;
             tagContainer.appendChild(tag);
-        }
+        };
 
-        // Event delegation for tag removal
-        tagContainer.addEventListener('click', (e) => {
-            if (e.target.classList.contains('remove-tag')) {
-                e.target.parentElement.remove();
+        // Manual Add Button
+        manualAddTagBtn.addEventListener('click', () => {
+            addTag(tagSearch.value);
+            tagSearch.value = '';
+        });
+        
+        // Search Filter
+        tagSearch.addEventListener('input', (e) => {
+            const val = e.target.value.toLowerCase();
+            tagResults.innerHTML = '';
+            if(!val) { tagResults.classList.remove('show'); return; }
+            
+            const matches = allTags.filter(t => t.name.toLowerCase().includes(val));
+            if(matches.length > 0) {
+                tagResults.classList.add('show');
+                matches.forEach(t => {
+                    const div = document.createElement('div');
+                    div.className = 'search-result-item';
+                    div.innerText = t.name;
+                    div.onclick = () => { addTag(t.name); tagSearch.value=''; tagResults.classList.remove('show'); };
+                    tagResults.appendChild(div);
+                });
+            } else {
+                tagResults.classList.remove('show');
             }
         });
+        
+        tagSearch.addEventListener('keypress', (e) => {
+            if(e.key === 'Enter') { e.preventDefault(); manualAddTagBtn.click(); }
+        });
 
-        // Category management
-        const categorySelect = document.getElementById('categorySelect');
+        // --- CATEGORIES LOGIC ---
+        const categoryContainer = document.getElementById('categoryContainer');
         const categorySearch = document.getElementById('categorySearch');
         const categoryResults = document.getElementById('categoryResults');
-        const addCategoryBtn = document.getElementById('addCategory');
-        const categoryContainer = document.getElementById('categoryContainer');
-        const categoriesJson = `{{{ jsonStringify categories }}}`;
-        const categories = JSON.parse(categoriesJson);
-
-        // Store all available categories
+        const manualAddCatBtn = document.getElementById('manualAddCategory');
+        const categorySelect = document.getElementById('categorySelect');
+        
         const allCategories = Array.from(categorySelect.options)
-            .filter(option => option.value !== '')
-            .map(option => ({ value: parseInt(option.value, 10), text: option.text }));
+                                   .map(opt => ({name: opt.text, id: parseInt(opt.value)}))
+                                   .filter(c => !isNaN(c.id));
 
-        if (categorySearch) {
-            categorySearch.addEventListener('input', (e) => {
-                filterAndShowCategories(e.target.value);
-            });
+        window.addCategory = function(id) {
+            id = parseInt(id);
+            if (!id) return;
+            
+            // Check existence
+            const exists = Array.from(categoryContainer.getElementsByClassName('category')).some(c => parseInt(c.dataset.categoryId) === id);
+            if(exists) return;
+            
+            // Get name
+            const catObj = allCategories.find(c => c.id === id);
+            if(!catObj) return;
+            
+            const span = document.createElement('span');
+            span.className = 'category';
+            span.dataset.categoryId = id;
+            span.innerHTML = `${catObj.name}<button type="button" class="remove-category">&times;</button>`;
+            categoryContainer.appendChild(span);
+        };
 
-            // Close results when clicking outside
-            document.addEventListener('click', (e) => {
-                if (!e.target.closest('.search-container') && !e.target.closest('#categoryResults')) {
-                    categoryResults.classList.remove('show');
-                }
-            });
-
-            categorySearch.addEventListener('focus', () => {
-                if (categorySearch.value || allCategories.length > 0) {
-                    filterAndShowCategories(categorySearch.value);
-                }
-            });
-        }
-
-        function filterAndShowCategories(searchTerm) {
-            const filtered = allCategories.filter(cat =>
-                cat.text.toLowerCase().includes(searchTerm.toLowerCase())
-            );
-
+        // Filter Logic
+        categorySearch.addEventListener('input', (e) => {
+            const val = e.target.value.toLowerCase();
             categoryResults.innerHTML = '';
-
-            if (filtered.length === 0) {
-                if (searchTerm) {
-                    categoryResults.innerHTML = '<div class="search-result-item" style="color: var(--text-muted);">No categories found</div>';
-                }
-                categoryResults.classList.toggle('show', searchTerm.length > 0);
-            } else {
-                filtered.forEach(cat => {
-                    const item = document.createElement('div');
-                    item.className = 'search-result-item';
-                    item.textContent = cat.text;
-                    item.addEventListener('click', () => {
-                        addCategory(cat.value);
-                        categorySearch.value = '';
-                        categoryResults.classList.remove('show');
-                    });
-                    categoryResults.appendChild(item);
-                });
+            if(!val) { categoryResults.classList.remove('show'); return; }
+            
+            const matches = allCategories.filter(c => c.name.toLowerCase().includes(val));
+            if(matches.length > 0) {
                 categoryResults.classList.add('show');
-            }
-        }
-
-        if (addCategoryBtn) {
-            addCategoryBtn.addEventListener('click', () => {
-                // Find the first visible category from search results
-                const visibleItems = categoryResults.querySelectorAll('.search-result-item');
-                if (visibleItems.length > 0 && visibleItems[0].textContent !== 'No categories found') {
-                    visibleItems[0].click();
-                }
-            });
-        }
-
-        function addCategory(categoryId) {
-            if (!categoryId || !categoryContainer) return;
-
-            // Check if category already exists
-            const existingCategories = Array.from(categoryContainer.getElementsByClassName('category'))
-                .map(cat => parseInt(cat.getAttribute('data-category-id'), 10));
-
-            if (existingCategories.includes(categoryId)) {
-                return; // Don't add duplicate categories
-            }
-
-            // Find category name
-            const category = categories.find(c => c.id === categoryId);
-            if (!category) return;
-
-            const categoryElement = document.createElement('span');
-            categoryElement.className = 'category';
-            categoryElement.setAttribute('data-category-id', categoryId);
-            categoryElement.innerHTML = `
-            ${category.name}
-            <button type="button" class="remove-category">&times;</button>
-        `;
-            categoryContainer.appendChild(categoryElement);
-        }
-
-        // Event delegation for category removal
-        categoryContainer.addEventListener('click', (e) => {
-            if (e.target.classList.contains('remove-category')) {
-                e.target.parentElement.remove();
-            }
-        });
-
-        // Handle form submission
-        // Preview image URL function
-        window.previewImageUrl = function (input) {
-            const imagePreview = document.getElementById('imagePreview');
-            const previewImg = imagePreview.querySelector('img');
-            const currentPreview = document.querySelector('.current-preview');
-
-            if (input.value) {
-                // Update preview
-                previewImg.src = input.value;
-                imagePreview.style.display = 'block';
-
-                // Hide current preview if exists
-                if (currentPreview) {
-                    currentPreview.style.display = 'none';
-                }
-
-                // Handle image load error
-                previewImg.onerror = function () {
-                    imagePreview.style.display = 'none';
-                    if (currentPreview) {
-                        currentPreview.style.display = 'block';
-                    }
-                    showNotification('Invalid image URL or image not accessible', 'error');
-                };
+                matches.forEach(c => {
+                    const div = document.createElement('div');
+                    div.className = 'search-result-item';
+                    div.innerText = c.name;
+                    div.onclick = () => { addCategory(c.id); categorySearch.value=''; categoryResults.classList.remove('show'); };
+                    categoryResults.appendChild(div);
+                });
             } else {
-                imagePreview.style.display = 'none';
-                if (currentPreview) {
-                    currentPreview.style.display = 'block';
-                }
-            }
-        };
-
-        // Image upload functionality
-        window.switchImageTab = function(tabName) {
-            // Update tab buttons
-            document.querySelectorAll('.tab-btn').forEach(btn => {
-                btn.classList.remove('active');
-            });
-            document.querySelector(`[data-tab="${tabName}"]`).classList.add('active');
-
-            // Update tab content
-            document.querySelectorAll('.tab-content').forEach(content => {
-                content.style.display = 'none';
-            });
-            document.getElementById(tabName + 'Tab').style.display = 'block';
-
-            // Load images when browse tab is activated
-            if (tabName === 'browse') {
-                loadBucketImages();
-            }
-        };
-
-        let currentImages = [];
-        let hasMoreImages = false;
-        let nextToken = null;
-
-        function loadBucketImages(searchTerm = '', loadMore = false) {
-            const imageGrid = document.getElementById('imageGrid');
-            
-            if (!loadMore) {
-                imageGrid.innerHTML = '<div class="loading-spinner"><i class="fas fa-spinner fa-spin"></i><p>Loading images...</p></div>';
-                currentImages = [];
-                nextToken = null;
-            }
-
-            // Build query parameters
-            const params = new URLSearchParams({
-                prefix: 'blog-images/',
-                limit: 20
-            });
-
-            if (nextToken) {
-                params.append('startAfter', nextToken);
-            }
-
-            fetch(`/dashboard/r2-admin?${params.toString()}`)
-                .then(response => response.text())
-                .then(html => {
-                    // Parse the HTML response to extract file data
-                    const parser = new DOMParser();
-                    const doc = parser.parseFromString(html, 'text/html');
-                    
-                    // This is a simplified approach - in production, you'd want a proper API endpoint
-                    // For now, let's use the R2 API directly
-                    return fetch('/dashboard/api/r2/list-images', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ 
-                            prefix: 'blog-images/',
-                            searchTerm: searchTerm,
-                            maxKeys: 20,
-                            continuationToken: nextToken 
-                        })
-                    });
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        renderImages(data.images, loadMore);
-                        hasMoreImages = data.hasMore;
-                        nextToken = data.nextToken;
-                        
-                        const loadMoreBtn = document.getElementById('loadMoreImages');
-                        loadMoreBtn.style.display = hasMoreImages ? 'block' : 'none';
-                    } else {
-                        throw new Error(data.error || 'Failed to load images');
-                    }
-                })
-                .catch(error => {
-                    console.error('Error loading images:', error);
-                    imageGrid.innerHTML = '<div class="loading-spinner"><p>Error loading images. Please try again.</p></div>';
-                });
-        }
-
-        function renderImages(images, append = false) {
-            const imageGrid = document.getElementById('imageGrid');
-            
-            if (!append) {
-                imageGrid.innerHTML = '';
-                currentImages = [];
-            }
-
-            images.forEach(image => {
-                if (isImageFile(image.key)) {
-                    currentImages.push(image);
-                    const imageItem = createImageItem(image);
-                    imageGrid.appendChild(imageItem);
-                }
-            });
-
-            if (currentImages.length === 0 && !append) {
-                imageGrid.innerHTML = '<div class="loading-spinner"><p>No images found</p></div>';
-            }
-        }
-
-        function createImageItem(image) {
-            const item = document.createElement('div');
-            item.className = 'image-item';
-            item.dataset.key = image.key;
-            
-            const img = document.createElement('img');
-            img.src = `https://blog.mbktech.org/images/${image.key}`;
-            img.alt = image.key;
-            img.loading = 'lazy';
-            
-            const name = document.createElement('div');
-            name.className = 'image-name';
-            name.textContent = image.key.split('/').pop();
-            
-            item.appendChild(img);
-            item.appendChild(name);
-            
-            item.addEventListener('click', () => selectImage(image.key, item));
-            
-            return item;
-        }
-
-        function selectImage(key, element) {
-            // Remove previous selection
-            document.querySelectorAll('.image-item.selected').forEach(item => {
-                item.classList.remove('selected');
-            });
-            
-            // Select current item
-            element.classList.add('selected');
-            
-            // Update the preview image URL
-            const imageUrl = `https://blog.mbktech.org/images/${key}`;
-            document.getElementById('previewImage').value = imageUrl;
-            previewImageUrl(document.getElementById('previewImage'));
-            
-            // Switch back to URL tab to show the result
-            switchImageTab('url');
-            
-            showUploadStatus(`Selected: ${key.split('/').pop()}`, 'success');
-        }
-
-        function isImageFile(filename) {
-            const imageExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.svg'];
-            return imageExtensions.some(ext => filename.toLowerCase().endsWith(ext));
-        }
-
-        // Image search functionality
-        document.addEventListener('DOMContentLoaded', function() {
-            const searchInput = document.getElementById('imageSearch');
-            const refreshBtn = document.getElementById('refreshImages');
-            const loadMoreBtn = document.getElementById('loadMoreImages');
-
-            if (searchInput) {
-                let searchTimeout;
-                searchInput.addEventListener('input', function() {
-                    clearTimeout(searchTimeout);
-                    searchTimeout = setTimeout(() => {
-                        loadBucketImages(this.value);
-                    }, 500);
-                });
-            }
-
-            if (refreshBtn) {
-                refreshBtn.addEventListener('click', () => {
-                    loadBucketImages(searchInput ? searchInput.value : '');
-                });
-            }
-
-            if (loadMoreBtn) {
-                loadMoreBtn.addEventListener('click', () => {
-                    loadBucketImages(searchInput ? searchInput.value : '', true);
-                });
+                categoryResults.classList.remove('show');
             }
         });
 
-        window.handleImageUpload = function(input) {
+        // Close dropdowns on click outside
+        document.addEventListener('click', (e) => {
+            if(!e.target.closest('.tag-selector')) tagResults.classList.remove('show');
+            if(!e.target.closest('.category-selector')) categoryResults.classList.remove('show');
+        });
+
+        // Remove Handlers
+        tagContainer.addEventListener('click', e => { if(e.target.classList.contains('remove-tag')) e.target.parentElement.remove(); });
+        categoryContainer.addEventListener('click', e => { if(e.target.classList.contains('remove-category')) e.target.parentElement.remove(); });
+
+        // --- IMAGE HANDLING ---
+        window.switchImageTab = (tab) => {
+            document.querySelectorAll('.tab-content').forEach(el => el.style.display = 'none');
+            document.getElementById(tab+'Tab').style.display = 'block';
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            // If browse tab, load images
+            if(tab === 'browse') {
+                window.loadBucketImages();
+            }
+        };
+        
+        window.previewImageUrl = (input) => {
+            const img = document.querySelector('#imagePreview img');
+            if(input.value) {
+                img.src = input.value;
+                document.getElementById('imagePreview').style.display = 'block';
+            }
+        };
+
+        // File Upload
+        window.handleImageUpload = (input) => {
             const file = input.files[0];
-            if (!file) return;
-
-            // Validate file type - be more specific
-            const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
-            if (!allowedTypes.includes(file.type.toLowerCase())) {
-                showUploadStatus('Please select a valid image file (JPG, PNG, GIF, or WebP only).', 'error');
-                input.value = '';
-                return;
-            }
+            if(!file) return;
             
-            // Validate filename length
-            if (file.name.length > 255) {
-                showUploadStatus('Filename is too long. Please rename the file.', 'error');
-                input.value = '';
-                return;
-            }
-
-            // Validate file size (20MB)
-            if (file.size > 20 * 1024 * 1024) {
-                showUploadStatus('File size must be less than 20MB.', 'error');
-                input.value = '';
-                return;
-            }
+            const progress = document.querySelector('#uploadProgress .progress-bar');
+            document.getElementById('uploadProgress').style.display = 'block';
             
-            // Additional client-side checks
-            if (file.size === 0) {
-                showUploadStatus('File appears to be empty.', 'error');
-                input.value = '';
-                return;
-            }
-
-            // Show upload progress
-            const uploadProgress = document.getElementById('uploadProgress');
-            const progressBar = uploadProgress.querySelector('.progress-bar');
-            const progressText = uploadProgress.querySelector('.progress-text');
-            
-            uploadProgress.style.display = 'block';
-            progressBar.style.width = '0%';
-            progressText.textContent = '0%';
-
-            // Create FormData
             const formData = new FormData();
             formData.append('image', file);
-
-            // Upload using XMLHttpRequest for progress tracking
+            
             const xhr = new XMLHttpRequest();
-
-            xhr.upload.addEventListener('progress', function(e) {
-                if (e.lengthComputable) {
-                    const percentComplete = Math.round((e.loaded / e.total) * 100);
-                    progressBar.style.width = percentComplete + '%';
-                    progressText.textContent = percentComplete + '%';
-                }
-            });
-
-            xhr.addEventListener('load', function() {
-                uploadProgress.style.display = 'none';
-                try {
-                    const response = JSON.parse(xhr.responseText);
-                    if (response.success) {
-                        // Update the preview image URL input
-                        document.getElementById('previewImage').value = response.url;
-                        // Trigger preview update
-                        previewImageUrl(document.getElementById('previewImage'));
-                        // Switch back to URL tab to show the result
-                        switchImageTab('url');
-                        showUploadStatus(`Image uploaded successfully! Size: ${formatBytes(response.size)}`, 'success');
-                    } else {
-                        showUploadStatus('Upload failed: ' + (response.error || 'Unknown error'), 'error');
-                    }
-                } catch (e) {
-                    showUploadStatus('Upload failed: Invalid server response', 'error');
-                }
-                // Clear file input
-                input.value = '';
-            });
-
-            xhr.addEventListener('error', function() {
-                uploadProgress.style.display = 'none';
-                showUploadStatus('Upload failed: Network error', 'error');
-                input.value = '';
-            });
-
             xhr.open('POST', '/dashboard/api/upload-image');
+            
+            xhr.upload.onprogress = (e) => {
+                if(e.lengthComputable) {
+                    const pct = (e.loaded / e.total) * 100;
+                    progress.style.width = pct + '%';
+                }
+            };
+            
+            xhr.onload = () => {
+                if(xhr.status === 200) {
+                    const res = JSON.parse(xhr.responseText);
+                    document.getElementById('previewImage').value = res.url;
+                    previewImageUrl(document.getElementById('previewImage'));
+                    switchImageTab('url');
+                    showNotification("Image Uploaded!");
+                } else {
+                    showNotification("Upload Failed", "error");
+                }
+                document.getElementById('uploadProgress').style.display = 'none';
+            };
+            
             xhr.send(formData);
         };
 
-        function showUploadStatus(message, type) {
-            const statusDiv = document.getElementById('uploadStatus');
-            statusDiv.textContent = message;
-            statusDiv.className = `upload-status ${type}`;
-            statusDiv.style.display = 'block';
+        // R2 Gallery Browser (Mock logic connecting to existing API)
+        window.loadBucketImages = (force = false) => {
+            const grid = document.getElementById('imageGrid');
+            if(!force && grid.children.length > 1) return; // Don't reload if already loaded
             
-            // Hide after 5 seconds for success, keep for errors
-            if (type === 'success') {
-                setTimeout(() => {
-                    statusDiv.style.display = 'none';
-                }, 5000);
-            }
-        }
-
-        function formatBytes(bytes) {
-            if (!bytes) return '0 B';
-            const k = 1024;
-            const sizes = ['B', 'KB', 'MB', 'GB'];
-            const i = Math.floor(Math.log(bytes) / Math.log(k));
-            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
-        }
-
-        // Drag and drop functionality for upload area
-        document.addEventListener('DOMContentLoaded', function() {
-            const uploadArea = document.querySelector('.upload-area');
-            const imageUploadInput = document.getElementById('imageUpload');
-
-            if (uploadArea) {
-                uploadArea.addEventListener('dragover', function(e) {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    this.classList.add('dragover');
-                });
-
-                uploadArea.addEventListener('dragleave', function(e) {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    this.classList.remove('dragover');
-                });
-
-                uploadArea.addEventListener('drop', function(e) {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    this.classList.remove('dragover');
-
-                    const files = e.dataTransfer.files;
-                    if (files.length > 0) {
-                        imageUploadInput.files = files;
-                        handleImageUpload(imageUploadInput);
-                    }
-                });
-            }
-        });
-
-        // Handle markdown preview
-        const previewBtn = document.getElementById('previewBtn');
-        const markdownPreview = document.getElementById('markdownPreview');
-        const contentTextarea = document.getElementById('content');
-        const editorContainer = document.getElementById('editorContainer');
-        let isPreviewMode = false;
-        let isSplitView = false;
-        let previewUpdateTimeout;
-
-        // Markdown toolbar functions
-        window.insertMarkdown = function (before, after) {
-            const textarea = contentTextarea;
-            const start = textarea.selectionStart;
-            const end = textarea.selectionEnd;
-            const selectedText = textarea.value.substring(start, end);
-            const replacement = before + selectedText + after;
-
-            // Use document.execCommand to preserve undo history
-            textarea.focus();
+            grid.innerHTML = '<div style="padding:20px; text-align:center;"><i class="fas fa-spinner fa-spin"></i> Loading...</div>';
             
-            // For modern browsers, use execCommand which maintains undo stack
-            if (document.execCommand) {
-                // First, delete the selected text if any
-                if (start !== end) {
-                    textarea.setSelectionRange(start, end);
-                    document.execCommand('delete', false);
-                }
-                
-                // Then insert the new text
-                document.execCommand('insertText', false, replacement);
-                
-                // Set cursor position after the inserted text
-                const newPosition = start + replacement.length;
-                textarea.setSelectionRange(newPosition, newPosition);
-            } else {
-                // Fallback for browsers that don't support execCommand
-                textarea.setRangeText(replacement, start, end, 'end');
-            }
-
-            // Update preview if in split view
-            if (isSplitView) {
-                updatePreview();
-            }
-        };
-
-        window.insertLink = function () {
-            const url = prompt('Enter URL:');
-            if (url) {
-                const text = prompt('Enter link text:', 'link text');
-                if (text) {
-                    insertMarkdown(`[${text}](${url})`, '');
-                }
-            }
-        };
-
-        window.insertCodeBlock = function () {
-            const language = prompt('Enter language (e.g., javascript, python):', 'javascript');
-            if (language !== null) {
-                insertMarkdown(`\n\`\`\`${language}\n`, '\n\`\`\`\n');
-            }
-        };
-
-        window.togglePreview = async function () {
-            if (isSplitView) {
-                // If in split view, exit split view first
-                toggleSplitView();
-                return;
-            }
-
-            isPreviewMode = !isPreviewMode;
-
-            if (isPreviewMode) {
-                await updatePreview();
-                markdownPreview.style.display = 'block';
-                editorContainer.style.display = 'none';
-                previewBtn.innerHTML = '<i class="fas fa-edit"></i> Edit';
-                previewBtn.classList.add('active');
-            } else {
-                markdownPreview.style.display = 'none';
-                editorContainer.style.display = 'block';
-                previewBtn.innerHTML = '<i class="fas fa-eye"></i> Preview';
-                previewBtn.classList.remove('active');
-            }
-        };
-
-        window.toggleSplitView = function () {
-            isSplitView = !isSplitView;
-            const splitViewBtn = document.getElementById('splitViewBtn');
-            const parent = editorContainer.parentElement;
-
-            if (isSplitView) {
-                // Exit preview mode if active
-                if (isPreviewMode) {
-                    isPreviewMode = false;
-                    previewBtn.innerHTML = '<i class="fas fa-eye"></i> Preview';
-                    previewBtn.classList.remove('active');
-                }
-
-                parent.classList.add('split-view');
-                editorContainer.style.display = 'block';
-                markdownPreview.style.display = 'block';
-                splitViewBtn.style.color = 'var(--primary-color)';
-                updatePreview();
-
-                // Add live preview update
-                contentTextarea.addEventListener('input', handleLivePreview);
-            } else {
-                parent.classList.remove('split-view');
-                markdownPreview.style.display = 'none';
-                splitViewBtn.style.color = '';
-                contentTextarea.removeEventListener('input', handleLivePreview);
-            }
-        };
-
-        function handleLivePreview() {
-            clearTimeout(previewUpdateTimeout);
-            previewUpdateTimeout = setTimeout(updatePreview, 500);
-        }
-
-        async function updatePreview() {
-            try {
-                const content = contentTextarea.value;
-                const response = await fetch('/dashboard/api/markdown-preview', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ markdown: content })
-                });
-
-                if (response.ok) {
-                    const { html } = await response.json();
-                    markdownPreview.innerHTML = html;
-
-                    // Initialize markdown enhancer features
-                    if (typeof window.initializeMarkdownFeatures === 'function') {
-                        window.initializeMarkdownFeatures(markdownPreview);
-                    }
-                } else {
-                    throw new Error('Failed to generate preview');
-                }
-            } catch (err) {
-                console.error('Error generating preview:', err);
-                markdownPreview.innerHTML = '<p style="color: var(--danger-color);">Failed to generate preview. Please check your markdown syntax.</p>';
-            }
-        }
-
-        // Keyboard shortcuts
-        contentTextarea.addEventListener('keydown', (e) => {
-            if (e.ctrlKey || e.metaKey) {
-                switch (e.key.toLowerCase()) {
-                    case 'b':
-                        e.preventDefault();
-                        insertMarkdown('**', '**');
-                        break;
-                    case 'i':
-                        e.preventDefault();
-                        insertMarkdown('*', '*');
-                        break;
-                    case 'k':
-                        e.preventDefault();
-                        insertLink();
-                        break;
-                }
-            }
-        });
-
-        if (form) {
-            // Helper functions for notifications
-            function showNotification(message, type = 'success') {
-                const existing = document.querySelector('.notification');
-                if (existing) existing.remove();
-                
-                const notification = document.createElement('div');
-                notification.className = `notification notification-${type}`;
-                notification.style.cssText = `
-                    position: fixed;
-                    top: 20px;
-                    right: 20px;
-                    background: ${type === 'success' ? '#28a745' : '#dc3545'};
-                    color: white;
-                    padding: 1rem 1.5rem;
-                    border-radius: 6px;
-                    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-                    z-index: 10000;
-                    animation: slideIn 0.3s ease;
-                    max-width: 400px;
-                    font-weight: 500;
-                `;
-                notification.innerHTML = `
-                    <div style="display: flex; align-items: center; gap: 0.5rem;">
-                        <i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-triangle'}"></i>
-                        <span>${message}</span>
-                        <button onclick="this.parentElement.parentElement.remove()" style="background: none; border: none; color: white; margin-left: auto; cursor: pointer; font-size: 1.2rem;">&times;</button>
-                    </div>
-                `;
-                
-                if (!document.querySelector('#notification-styles')) {
-                    const style = document.createElement('style');
-                    style.id = 'notification-styles';
-                    style.textContent = `@keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }`;
-                    document.head.appendChild(style);
-                }
-                
-                document.body.appendChild(notification);
-                setTimeout(() => {
-                    if (notification.parentElement) {
-                        notification.style.animation = 'slideIn 0.3s ease reverse';
-                        setTimeout(() => notification.remove(), 300);
-                    }
-                }, 5000);
-            }
-
-            function setSubmitButtonLoading(isLoading) {
-                const saveBtn = form.querySelector('button[type="submit"]');
-                const originalText = saveBtn.dataset.originalText || saveBtn.textContent;
-                if (!saveBtn.dataset.originalText) {
-                    saveBtn.dataset.originalText = originalText;
-                }
-                
-                if (isLoading) {
-                    saveBtn.disabled = true;
-                    saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
-                } else {
-                    saveBtn.disabled = false;
-                    saveBtn.textContent = originalText;
-                }
-            }
-
-            // Change detection functions
-            function getCurrentPostData() {
-                const selectedCategoryElements = Array.from(categoryContainer.getElementsByClassName('category'));
-                const selectedCategories = selectedCategoryElements
-                    .map(el => parseInt(el.getAttribute('data-category-id'), 10))
-                    .filter(id => !isNaN(id));
-
-                const tags = Array.from(tagContainer.getElementsByClassName('tag'))
-                    .map(tag => tag.textContent.trim().replace('×', '').trim())
-                    .filter(tag => tag.length > 0);
-
-                return {
-                    title: form.querySelector('#title').value.trim(),
-                    content: form.querySelector('#content').value.trim(),
-                    excerpt: form.querySelector('#excerpt').value.trim(),
-                    preview_image: form.querySelector('#previewImage').value.trim(),
-                    status: form.querySelector('select[name="status"]').value,
-                    categories: selectedCategories.sort(),
-                    tags: tags.sort()
-                };
-            }
-
-            function detectChanges() {
-                {{#unless post}}
-                return { hasChanges: true, changes: [] }; // New post, always has changes
-                {{/unless}}
-                {{#if post}}
-                const current = getCurrentPostData();
-                const changes = [];
-
-                // Check each field for changes
-                if (current.title !== originalPostData.title) {
-                    changes.push({
-                        field: 'Title',
-                        from: originalPostData.title,
-                        to: current.title
-                    });
-                }
-
-                if (current.content !== originalPostData.content) {
-                    changes.push({
-                        field: 'Content',
-                        from: `${originalPostData.content.length} characters`,
-                        to: `${current.content.length} characters`
-                    });
-                }
-
-                if (current.excerpt !== originalPostData.excerpt) {
-                    changes.push({
-                        field: 'Excerpt',
-                        from: originalPostData.excerpt || '(empty)',
-                        to: current.excerpt || '(empty)'
-                    });
-                }
-
-                if (current.preview_image !== originalPostData.preview_image) {
-                    changes.push({
-                        field: 'Preview Image',
-                        from: originalPostData.preview_image || '(none)',
-                        to: current.preview_image || '(none)'
-                    });
-                }
-
-                if (current.status !== originalPostData.status) {
-                    changes.push({
-                        field: 'Status',
-                        from: originalPostData.status,
-                        to: current.status
-                    });
-                }
-
-                // Check categories
-                const originalCategories = originalPostData.categories.sort();
-                const currentCategories = current.categories.sort();
-                if (JSON.stringify(originalCategories) !== JSON.stringify(currentCategories)) {
-                    changes.push({
-                        field: 'Categories',
-                        from: `${originalCategories.length} selected`,
-                        to: `${currentCategories.length} selected`
-                    });
-                }
-
-                // Check tags
-                const originalTags = originalPostData.tags.sort();
-                const currentTags = current.tags.sort();
-                if (JSON.stringify(originalTags) !== JSON.stringify(currentTags)) {
-                    changes.push({
-                        field: 'Tags',
-                        from: originalTags.join(', ') || '(none)',
-                        to: currentTags.join(', ') || '(none)'
-                    });
-                }
-
-                return {
-                    hasChanges: changes.length > 0,
-                    changes: changes
-                };
-                {{/if}}
-            }
-
-            function showChangesModal(changes, onConfirm, onCancel) {
-                // Remove existing modal
-                const existingModal = document.querySelector('.changes-modal');
-                if (existingModal) existingModal.remove();
-
-                const modal = document.createElement('div');
-                modal.className = 'changes-modal';
-                modal.style.cssText = `
-                    position: fixed;
-                    top: 0;
-                    left: 0;
-                    width: 100%;
-                    height: 100%;
-                    background: rgba(0,0,0,0.7);
-                    display: flex;
-                    justify-content: center;
-                    align-items: center;
-                    z-index: 10001;
-                    animation: fadeIn 0.3s ease;
-                `;
-
-                const modalContent = document.createElement('div');
-                modalContent.style.cssText = `
-                    background: var(--dark);
-                    border-radius: 8px;
-                    padding: 2rem;
-                    max-width: 500px;
-                    width: 90%;
-                    max-height: 80vh;
-                    overflow-y: auto;
-                    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-                    border: 1px solid rgba(255,255,255,0.1);
-                `;
-
-                let changesHtml = '';
-                changes.forEach(change => {
-                    const fromText = change.from.length > 50 ? change.from.substring(0, 50) + '...' : change.from;
-                    const toText = change.to.length > 50 ? change.to.substring(0, 50) + '...' : change.to;
-                    changesHtml += `
-                        <div style="margin-bottom: 1rem; padding: 1rem; background: rgba(255,255,255,0.05); border-radius: 6px;">
-                            <strong style="color: var(--accent);">${change.field}</strong><br>
-                            <span style="color: var(--text-light); font-size: 0.9rem;">
-                                From: <em style="color: #ff7675;">${fromText}</em><br>
-                                To: <em style="color: #00b894;">${toText}</em>
-                            </span>
-                        </div>
-                    `;
-                });
-
-                modalContent.innerHTML = `
-                    <div style="display: flex; align-items: center; margin-bottom: 1.5rem;">
-                        <i class="fas fa-edit" style="color: var(--accent); margin-right: 0.5rem;"></i>
-                        <h3 style="color: var(--light); margin: 0;">Confirm Changes</h3>
-                    </div>
-                    <p style="color: var(--text-light); margin-bottom: 1.5rem;">
-                        You have made changes to ${changes.length} field${changes.length > 1 ? 's' : ''}. Please review before saving:
-                    </p>
-                    <div style="margin-bottom: 2rem;">
-                        ${changesHtml}
-                    </div>
-                    <div style="display: flex; gap: 1rem; justify-content: flex-end;">
-                        <button class="btn btn-secondary" onclick="this.closest('.changes-modal').remove(); if(typeof arguments[0] === 'function') arguments[0]();" 
-                                style="padding: 0.75rem 1.5rem;">Cancel</button>
-                        <button class="btn btn-primary" onclick="this.closest('.changes-modal').remove(); if(typeof arguments[1] === 'function') arguments[1]();" 
-                                style="padding: 0.75rem 1.5rem;">
-                            <i class="fas fa-save"></i> Save Changes
-                        </button>
-                    </div>
-                `;
-
-                modal.appendChild(modalContent);
-                document.body.appendChild(modal);
-
-                // Add click handlers
-                const cancelBtn = modal.querySelector('.btn-secondary');
-                const saveBtn = modal.querySelector('.btn-primary');
-                
-                cancelBtn.onclick = () => {
-                    modal.remove();
-                    if (onCancel) onCancel();
-                };
-                
-                saveBtn.onclick = () => {
-                    modal.remove();
-                    if (onConfirm) onConfirm();
-                };
-
-                // Close on background click
-                modal.addEventListener('click', (e) => {
-                    if (e.target === modal) {
-                        modal.remove();
-                        if (onCancel) onCancel();
-                    }
-                });
-
-                // Add fade in animation style if not exists
-                if (!document.querySelector('#changes-modal-styles')) {
-                    const style = document.createElement('style');
-                    style.id = 'changes-modal-styles';
-                    style.textContent = `
-                        @keyframes fadeIn {
-                            from { opacity: 0; }
-                            to { opacity: 1; }
-                        }
-                    `;
-                    document.head.appendChild(style);
-                }
-            }
-
-            form.addEventListener('submit', async (e) => {
-                e.preventDefault();
-                
-                // Check for changes first (only for existing posts)
-                {{#if post}}
-                const changeDetection = detectChanges();
-                
-                if (!changeDetection.hasChanges) {
-                    showNotification('No changes detected. Nothing to save.', 'info');
-                    return;
-                }
-
-                // Show changes confirmation modal
-                showChangesModal(changeDetection.changes, async () => {
-                    // User confirmed, proceed with save
-                    await submitForm();
-                }, () => {
-                    // User cancelled, do nothing
-                    showNotification('Save cancelled', 'info');
-                });
-                {{else}}
-                // New post, proceed directly
-                await submitForm();
-                {{/if}}
-            });
-
-            async function submitForm() {
-                setSubmitButtonLoading(true);
-
-                try {
-                    // Get selected categories from the category container
-                    const selectedCategoryElements = Array.from(categoryContainer.getElementsByClassName('category'));
-                    const selectedCategories = selectedCategoryElements
-                        .map(el => parseInt(el.getAttribute('data-category-id'), 10))
-                        .filter(id => !isNaN(id));
-
-                    // Validate that at least one category is selected
-                    if (selectedCategories.length === 0) {
-                        showNotification('Please select at least one category for the post', 'error');
-                        categoryContainer.focus();
-                        setSubmitButtonLoading(false);
-                        return;
-                    }
-
-                    const formData = new FormData();
-
-                    // Add basic form fields
-                    formData.append('title', form.querySelector('#title').value);
-                    formData.append('content', form.querySelector('#content').value);
-                    formData.append('excerpt', form.querySelector('#excerpt').value);
-                    formData.append('preview_image', form.querySelector('#previewImage').value);
-                    formData.append('status', form.querySelector('select[name="status"]').value);
-
-                    // Add tags and categories to form data
-                    const tags = Array.from(tagContainer.getElementsByClassName('tag'))
-                        .map(tag => tag.textContent.trim().replace('×', '').trim())
-                        .filter(tag => tag.length > 0);
-
-                    formData.append('tags', JSON.stringify(tags));
-                    formData.append('categories', JSON.stringify(selectedCategories));
-
-                    const response = await fetch('{{#if post}}/dashboard/api/posts/{{post.id}}{{else}}/dashboard/api/posts{{/if}}', {
-                        method: '{{#if post}}PUT{{else}}POST{{/if}}',
-                        headers: {
-                            'Content-Type': 'application/x-www-form-urlencoded',
-                        },
-                        body: new URLSearchParams(formData)
-                    });
-
-                    const data = await response.json();
-                    if (response.ok && data.success) {
-                        showNotification('{{#if post}}Post updated successfully!{{else}}Post created successfully!{{/if}}');
-                        setTimeout(() => {
-                            window.location.href = '/dashboard/posts';
-                        }, 1500);
+            fetch('/dashboard/api/r2/list-images', { method: 'POST' })
+                .then(r => r.json())
+                .then(data => {
+                    grid.innerHTML = '';
+                    if(data.images && data.images.length > 0) {
+                        data.images.forEach(img => {
+                            const div = document.createElement('div');
+                            div.className = 'image-item';
+                            div.innerHTML = `<img src="${img.url}" loading="lazy">`;
+                            div.onclick = () => {
+                                document.getElementById('previewImage').value = img.url;
+                                previewImageUrl(document.getElementById('previewImage'));
+                                switchImageTab('url');
+                            };
+                            grid.appendChild(div);
+                        });
                     } else {
-                        showNotification(data.error || data.message || 'Failed to save post', 'error');
-                        setSubmitButtonLoading(false);
+                        grid.innerHTML = '<p>No images found.</p>';
                     }
-                } catch (err) {
-                    console.error('Error saving post:', err);
-                    showNotification('Network error occurred. Please try again.', 'error');
-                    setSubmitButtonLoading(false);
-                }
+                })
+                .catch(e => grid.innerHTML = '<p>Error loading images.</p>');
+        };
+
+        // --- MARKDOWN EDITOR & PREVIEW ---
+        const contentTextarea = document.getElementById('content');
+        
+        window.insertMarkdown = (before, after) => {
+            const start = contentTextarea.selectionStart;
+            const end = contentTextarea.selectionEnd;
+            const text = contentTextarea.value.substring(start, end);
+            const replacement = before + text + after;
+            contentTextarea.setRangeText(replacement, start, end, 'end');
+            contentTextarea.focus();
+            window.handleLivePreview();
+        };
+        
+        window.insertLink = () => {
+            const url = prompt("Enter URL:", "https://");
+            if(url) insertMarkdown("[", "]("+url+")");
+        };
+        
+        window.insertCodeBlock = () => {
+            insertMarkdown("\n```javascript\n", "\n```\n");
+        };
+        
+        window.toggleSplitView = () => {
+            const parent = document.getElementById('editorContainer').parentElement.parentElement; // .form-group
+            const preview = document.getElementById('markdownPreview');
+            const wrapper = document.getElementById('editorWrapper');
+            const editorDiv = document.getElementById('editorContainer');
+            
+            if(preview.style.display === 'none') {
+                wrapper.classList.add('split-view');
+                preview.style.display = 'block';
+                window.handleLivePreview();
+            } else {
+                wrapper.classList.remove('split-view');
+                preview.style.display = 'none';
             }
+        };
+
+        let previewTimeout;
+        window.handleLivePreview = async () => {
+            const text = contentTextarea.value;
+            // Debounce
+            clearTimeout(previewTimeout);
+            previewTimeout = setTimeout(async () => {
+                try {
+                    const res = await fetch('/dashboard/api/markdown-preview', {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify({markdown: text})
+                    });
+                    const data = await res.json();
+                    document.getElementById('markdownPreview').innerHTML = data.html;
+                } catch(e) {}
+            }, 300);
+        };
+        
+        contentTextarea.addEventListener('input', () => {
+            if(document.getElementById('markdownPreview').style.display !== 'none') {
+                window.handleLivePreview();
+            }
+        });
+
+        // --- GENERAL HELPERS ---
+        function showNotification(msg, type='success') {
+            const div = document.createElement('div');
+            div.className = `notification ${type}`;
+            div.innerHTML = `<i class="fas fa-${type==='success'?'check-circle':'exclamation-triangle'}"></i> ${msg}`;
+            document.body.appendChild(div);
+            setTimeout(() => div.remove(), 4000);
         }
+
+        // --- SUBMIT FORM ---
+        const form = document.getElementById('editPostForm');
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('saveBtn');
+            const originalText = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+            
+            // Gather Data
+            const formData = new FormData();
+            formData.append('title', document.getElementById('title').value);
+            formData.append('excerpt', document.getElementById('excerpt').value);
+            formData.append('content', document.getElementById('content').value);
+            formData.append('preview_image', document.getElementById('previewImage').value);
+            formData.append('status', form.querySelector('select[name="status"]').value);
+
+            const tags = Array.from(tagContainer.getElementsByClassName('tag')).map(t => t.innerText.replace('×','').trim());
+            const cats = Array.from(categoryContainer.getElementsByClassName('category')).map(c => c.dataset.categoryId);
+
+            formData.append('tags', JSON.stringify(tags));
+            formData.append('categories', JSON.stringify(cats));
+
+            try {
+                // Determine URL (Edit vs Create)
+                const url = window.location.href.includes('edit') 
+                    ? window.location.href.replace('edit', 'api/posts') 
+                    : '/dashboard/api/posts';
+                
+                const method = window.location.href.includes('edit') ? 'PUT' : 'POST';
+
+                const res = await fetch(url, {
+                    method: method,
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: new URLSearchParams(formData)
+                });
+                
+                const data = await res.json();
+                if(data.success) {
+                    showNotification("Post Saved Successfully!");
+                    setTimeout(() => window.location.href = '/dashboard/posts', 1000);
+                } else {
+                    showNotification("Save Failed: " + (data.error || data.message), "error");
+                    btn.disabled = false;
+                    btn.innerHTML = originalText;
+                }
+            } catch(e) {
+                showNotification("Network Error on Save", "error");
+                btn.disabled = false;
+                btn.innerHTML = originalText;
+            }
+        });
+
     })();
 </script>
 {{/section}}
