@@ -212,7 +212,7 @@ describe('Dashboard Routes', () => {
                 .put('/dashboard/api/comments/1/approve');
             
             expect(response.status).toBe(200);
-            expect(response.body).toEqual({ success: true });
+            expect(response.body).toEqual({ success: true, message: 'Comment approved successfully' });
         });
 
         it('should delete a comment', async () => {
@@ -221,19 +221,21 @@ describe('Dashboard Routes', () => {
                 .delete('/dashboard/api/comments/1');
             
             expect(response.status).toBe(200);
-            expect(response.body).toEqual({ success: true });
+            expect(response.body).toEqual({ success: true, message: 'Comment deleted successfully' });
         });
     });
 
     describe('Categories API', () => {
         it('should create a new category', async () => {
-            pool.query.mockResolvedValue({ rowCount: 1 });
+            pool.query
+                .mockResolvedValueOnce({ rows: [] }) // Check for existing category
+                .mockResolvedValueOnce({ rowCount: 1 }); // Insert new category
             const response = await request(app)
                 .post('/dashboard/api/categories')
                 .send({ name: 'New Category', description: 'Test Description' });
             
             expect(response.status).toBe(200);
-            expect(response.body).toEqual({ success: true });
+            expect(response.body).toEqual({ success: true, message: 'Category created successfully' });
         });
 
         it('should not delete category with associated posts', async () => {
@@ -248,7 +250,7 @@ describe('Dashboard Routes', () => {
                 .delete('/dashboard/api/categories/1');
             
             expect(response.status).toBe(400);
-            expect(response.body.error).toBe('Cannot delete category with associated posts.');
+            expect(response.body.error).toBe('Cannot delete category. It is used by 1 post(s). Please remove the category from all posts first.');
         });
     });
 
@@ -275,47 +277,51 @@ describe('Dashboard Routes', () => {
 
     describe('Tags API', () => {
         it('should create a new tag', async () => {
-            pool.query.mockResolvedValue({ rowCount: 1 });
+            pool.query
+                .mockResolvedValueOnce({ rows: [] }) // Check for existing tag
+                .mockResolvedValueOnce({ rowCount: 1 }); // Insert new tag
             const response = await request(app)
                 .post('/dashboard/api/tags')
                 .send({ name: 'New Tag' });
             
             expect(response.status).toBe(200);
-            expect(response.body).toEqual({ success: true });
+            expect(response.body).toEqual({ success: true, message: 'Tag created successfully' });
         });
 
         it('should update a tag', async () => {
-            pool.query.mockResolvedValue({ rowCount: 1 });
+            pool.query
+                .mockResolvedValueOnce({ rows: [] }) // Check for existing tag
+                .mockResolvedValueOnce({ rowCount: 1 }); // Update tag
             const response = await request(app)
                 .put('/dashboard/api/tags/1')
                 .send({ name: 'Updated Tag' });
             
             expect(response.status).toBe(200);
-            expect(response.body).toEqual({ success: true });
+            expect(response.body).toEqual({ success: true, message: 'Tag updated successfully' });
         });
 
         it('should delete a tag', async () => {
-            pool.query.mockResolvedValue({ rowCount: 1 });
+            pool.query
+                .mockResolvedValueOnce({ rows: [{ count: '0' }] }) // Check post count
+                .mockResolvedValueOnce({ rowCount: 1 }); // Delete tag
             const response = await request(app)
                 .delete('/dashboard/api/tags/1');
             
             expect(response.status).toBe(200);
-            expect(response.body).toEqual({ success: true });
+            expect(response.body).toEqual({ success: true, message: 'Tag deleted successfully' });
         });
     });
 
     describe('Unauthorized Access', () => {
     
-        it('should render a login prompt for non-logged-in user', async () => {
+        it('should return 401 for non-logged-in user accessing dashboard', async () => {
             const response = await request(server).get('/dashboard');
-            expect(response.status).toBe(200);
-            expect(response.text).toContain('You Are Not Logged In. Please Log In To Continue.');
+            expect(response.status).toBe(401);
         });
 
-        it('should render a login prompt for non-logged-in user', async () => {
+        it('should return 401 for non-logged-in user posting to tags', async () => {
             const response = await request(server).post('/dashboard/tags');
-            expect(response.status).toBe(200);
-            expect(response.text).toContain('You Are Not Logged In. Please Log In To Continue.');
+            expect(response.status).toBe(401);
         });
     });
 });
