@@ -721,6 +721,28 @@
 <script>
     (function () {
         /* ==========================================================================
+           0. ORIGINAL VALUES TRACKING (For Change Detection)
+           ========================================================================== */
+        const isEditMode = window.location.pathname.includes('/edit/');
+        const originalValues = {
+            title: document.getElementById('title')?.value || '',
+            excerpt: document.getElementById('excerpt')?.value || '',
+            content: document.getElementById('content')?.value || '',
+            preview_image: document.getElementById('previewImage')?.value || '',
+            status: document.querySelector('select[name="status"]')?.value || 'draft',
+            tags: [],
+            categories: []
+        };
+
+        // Capture original tags and categories after DOM is ready
+        document.addEventListener('DOMContentLoaded', () => {
+            originalValues.tags = Array.from(document.querySelectorAll('#tagContainer .tag'))
+                .map(t => t.innerText.replace('×','').trim());
+            originalValues.categories = Array.from(document.querySelectorAll('#categoryContainer .category'))
+                .map(c => c.dataset.categoryId);
+        });
+
+        /* ==========================================================================
            1. HYBRID AI SYSTEM LOGIC
            ========================================================================== */
         let currentAiContext = null; // 'title', 'excerpt', 'content'
@@ -1258,12 +1280,181 @@
             setTimeout(() => div.remove(), 4000);
         }
 
+        /* ==========================================================================
+           FORM VALIDATION & CHANGE TRACKING
+           ========================================================================== */
+        
+        // Validate required fields before submission
+        function validateForm() {
+            const errors = [];
+            
+            const title = document.getElementById('title').value.trim();
+            const content = document.getElementById('content').value.trim();
+            const categories = Array.from(categoryContainer.getElementsByClassName('category'));
+            
+            if (!title) {
+                errors.push('Title is required');
+                document.getElementById('title').style.borderColor = 'var(--danger-color)';
+            } else {
+                document.getElementById('title').style.borderColor = '';
+            }
+            
+            if (!content) {
+                errors.push('Content is required');
+                document.getElementById('content').style.borderColor = 'var(--danger-color)';
+            } else {
+                document.getElementById('content').style.borderColor = '';
+            }
+            
+            if (categories.length === 0) {
+                errors.push('At least one category is required');
+                document.getElementById('categoryContainer').style.borderColor = 'var(--danger-color)';
+            } else {
+                document.getElementById('categoryContainer').style.borderColor = '';
+            }
+            
+            return errors;
+        }
+
+        // Detect changes between original and current values
+        function getChangedFields() {
+            const changes = [];
+            
+            const currentTitle = document.getElementById('title').value;
+            const currentExcerpt = document.getElementById('excerpt').value;
+            const currentContent = document.getElementById('content').value;
+            const currentImage = document.getElementById('previewImage').value;
+            const currentStatus = form.querySelector('select[name="status"]').value;
+            const currentTags = Array.from(tagContainer.getElementsByClassName('tag')).map(t => t.innerText.replace('×','').trim());
+            const currentCategories = Array.from(categoryContainer.getElementsByClassName('category')).map(c => c.dataset.categoryId);
+            
+            if (currentTitle !== originalValues.title) {
+                changes.push({ field: 'Title', description: `Changed to "${currentTitle}"` });
+            }
+            if (currentExcerpt !== originalValues.excerpt) {
+                changes.push({ field: 'Excerpt', description: currentExcerpt ? 'Updated' : 'Cleared' });
+            }
+            if (currentContent !== originalValues.content) {
+                const oldWords = originalValues.content.trim().split(/\s+/).filter(w => w).length;
+                const newWords = currentContent.trim().split(/\s+/).filter(w => w).length;
+                const diff = newWords - oldWords;
+                const diffText = diff > 0 ? `+${diff} words` : diff < 0 ? `${diff} words` : 'Modified';
+                changes.push({ field: 'Content', description: `${newWords} words (${diffText})` });
+            }
+            if (currentImage !== originalValues.preview_image) {
+                changes.push({ field: 'Featured Image', description: currentImage ? 'Changed' : 'Removed' });
+            }
+            if (currentStatus !== originalValues.status) {
+                changes.push({ field: 'Status', description: `${originalValues.status} → ${currentStatus}` });
+            }
+            
+            // Compare tags
+            const addedTags = currentTags.filter(t => !originalValues.tags.includes(t));
+            const removedTags = originalValues.tags.filter(t => !currentTags.includes(t));
+            if (addedTags.length || removedTags.length) {
+                let desc = [];
+                if (addedTags.length) desc.push(`+${addedTags.join(', ')}`);
+                if (removedTags.length) desc.push(`-${removedTags.join(', ')}`);
+                changes.push({ field: 'Tags', description: desc.join(' | ') });
+            }
+            
+            // Compare categories - get names for display
+            const getCatName = (id) => {
+                const opt = categorySelect.querySelector(`option[value="${id}"]`);
+                return opt ? opt.text : `ID:${id}`;
+            };
+            const addedCats = currentCategories.filter(c => !originalValues.categories.includes(c));
+            const removedCats = originalValues.categories.filter(c => !currentCategories.includes(c));
+            if (addedCats.length || removedCats.length) {
+                let desc = [];
+                if (addedCats.length) desc.push(`+${addedCats.map(getCatName).join(', ')}`);
+                if (removedCats.length) desc.push(`-${removedCats.map(getCatName).join(', ')}`);
+                changes.push({ field: 'Categories', description: desc.join(' | ') });
+            }
+            
+            return changes;
+        }
+
+        // Show changes summary modal
+        function showChangesSummary(changes, onConfirm) {
+            // Create modal overlay
+            const overlay = document.createElement('div');
+            overlay.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.7);z-index:10000;display:flex;align-items:center;justify-content:center;';
+            
+            let changesHtml = changes.map(c => `
+                <div style="display:flex;align-items:center;gap:12px;padding:0.75rem 1rem;background:#2d2d3b;border-radius:6px;margin-bottom:0.5rem;">
+                    <i class="fas fa-pen" style="color:var(--primary-color);"></i>
+                    <span style="color:var(--text-light);font-weight:500;min-width:120px;">${c.field}</span>
+                    <span style="color:#4ade80;">${c.description}</span>
+                </div>
+            `).join('');
+            
+            overlay.innerHTML = `
+                <div style="background:var(--dark);border-radius:12px;padding:2rem;max-width:500px;width:90%;max-height:80vh;overflow-y:auto;box-shadow:0 20px 50px rgba(0,0,0,0.5);">
+                    <h2 style="margin:0 0 1.5rem;color:var(--text-light);display:flex;align-items:center;gap:10px;">
+                        <i class="fas fa-check-circle" style="color:var(--success-color);"></i> 
+                        Confirm Changes
+                    </h2>
+                    <p style="color:#a1a1aa;margin-bottom:1rem;font-size:0.9rem;">${changes.length} field${changes.length > 1 ? 's' : ''} will be updated:</p>
+                    <div style="margin-bottom:1.5rem;">${changesHtml}</div>
+                    <div style="display:flex;gap:1rem;justify-content:flex-end;">
+                        <button type="button" id="cancelChanges" style="padding:0.75rem 1.5rem;background:transparent;border:1px solid #3f3f4e;color:#a1a1aa;border-radius:6px;cursor:pointer;">Cancel</button>
+                        <button type="button" id="confirmChanges" style="padding:0.75rem 1.5rem;background:var(--primary-color);border:none;color:white;border-radius:6px;cursor:pointer;font-weight:600;">
+                            <i class="fas fa-save"></i> Confirm & Save
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(overlay);
+            
+            document.getElementById('cancelChanges').onclick = () => {
+                overlay.remove();
+            };
+            
+            document.getElementById('confirmChanges').onclick = () => {
+                overlay.remove();
+                onConfirm();
+            };
+            
+            overlay.onclick = (e) => {
+                if (e.target === overlay) overlay.remove();
+            };
+        }
+
         // --- SUBMIT FORM ---
         const form = document.getElementById('editPostForm');
         form.addEventListener('submit', async (e) => {
             e.preventDefault();
+            
+            // 1. VALIDATE REQUIRED FIELDS
+            const validationErrors = validateForm();
+            if (validationErrors.length > 0) {
+                showNotification('Please fix: ' + validationErrors.join(', '), 'error');
+                return;
+            }
+            
             const btn = document.getElementById('saveBtn');
             const originalText = btn.innerHTML;
+            
+            // 2. CHECK FOR CHANGES (Edit Mode Only)
+            if (isEditMode) {
+                const changes = getChangedFields();
+                if (changes.length === 0) {
+                    showNotification('No changes detected', 'error');
+                    return;
+                }
+                
+                // Show changes summary and wait for confirmation
+                showChangesSummary(changes, () => submitForm(btn, originalText));
+            } else {
+                // New post - submit directly
+                submitForm(btn, originalText);
+            }
+        });
+
+        // Actual form submission
+        async function submitForm(btn, originalText) {
             btn.disabled = true;
             btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
             
@@ -1282,19 +1473,22 @@
             formData.append('categories', JSON.stringify(cats));
 
             try {
-                // Determine URL (Edit vs Create)
-                const url = window.location.href.includes('edit') 
-                    ? window.location.href.replace('edit', 'api/posts') 
-                    : '/dashboard/api/posts';
-                
-                const method = window.location.href.includes('edit') ? 'PUT' : 'POST';
+                // Determine if editing or creating
+                let url = '/dashboard/api/posts';
+                let method = 'POST';
+                // Try to extract post ID from URL if editing
+                const match = window.location.pathname.match(/\/dashboard\/posts\/edit\/(\d+)/);
+                if (match && match[1]) {
+                    url = `/dashboard/api/posts/${match[1]}`;
+                    method = 'PUT';
+                }
 
                 const res = await fetch(url, {
                     method: method,
                     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
                     body: new URLSearchParams(formData)
                 });
-                
+
                 const data = await res.json();
                 if(data.success) {
                     showNotification("Post Saved Successfully!");
@@ -1309,7 +1503,7 @@
                 btn.disabled = false;
                 btn.innerHTML = originalText;
             }
-        });
+        }
 
     })();
 </script>
