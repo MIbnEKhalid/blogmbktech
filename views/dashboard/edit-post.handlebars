@@ -835,7 +835,7 @@
 
             // 2. Prepare Context (Current state of form)
             const context = {
-                title: document.getElementById('title').value,
+                aiInput: document.getElementById('aiInput').value,
                 excerpt: document.getElementById('excerpt').value,
                 content: document.getElementById('content').value.substring(0, 3000), // Limit size for API token safety
                 currentTitle: document.getElementById('title').value,

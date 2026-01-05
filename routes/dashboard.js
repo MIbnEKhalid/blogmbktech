@@ -22,7 +22,7 @@ const IMAGE_SIGNATURES = {
 function validateFileSignature(buffer, mimeType) {
     const signatures = IMAGE_SIGNATURES[mimeType];
     if (!signatures) return false;
-    
+
     return signatures.some(signature => {
         return signature.every((byte, index) => buffer[index] === byte);
     });
@@ -32,11 +32,11 @@ function validateFileSignature(buffer, mimeType) {
 function generateSecureFilename(originalname) {
     const ext = path.extname(originalname).toLowerCase();
     const allowedExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.svg'];
-    
+
     if (!allowedExtensions.includes(ext)) {
         throw new Error('Invalid file extension');
     }
-    
+
     const randomName = crypto.randomUUID();
     return `blog-images/${randomName}${ext}`;
 }
@@ -54,7 +54,7 @@ const uploadRateLimiter = rateLimit({
 });
 
 // Configure multer with disk storage and enhanced validation
-const upload = multer({ 
+const upload = multer({
     storage: multer.diskStorage({
         destination: (req, file, cb) => {
             cb(null, '/tmp'); // Use temp directory
@@ -78,12 +78,12 @@ const upload = multer({
         if (!allowedMimes.includes(file.mimetype)) {
             return cb(new Error('Invalid file type. Only JPEG, PNG, GIF, WebP, and SVG images are allowed.'), false);
         }
-        
+
         // Validate filename
         if (!file.originalname || file.originalname.length > 255) {
             return cb(new Error('Invalid filename'), false);
         }
-        
+
         cb(null, true);
     }
 });
@@ -560,7 +560,7 @@ router.delete('/api/posts/:id', async (req, res) => {
     const client = await pool.connect();
     try {
         await client.query('BEGIN');
-        
+
         // Check if post exists
         const postCheck = await client.query('SELECT id FROM posts WHERE id = $1', [req.params.id]);
         if (postCheck.rows.length === 0) {
@@ -576,7 +576,7 @@ router.delete('/api/posts/:id', async (req, res) => {
         await client.query('DELETE FROM post_categories WHERE post_id = $1', [req.params.id]);
         // Remove post
         await client.query('DELETE FROM posts WHERE id = $1', [req.params.id]);
-        
+
         await client.query('COMMIT');
         res.json({ success: true, message: 'Post deleted successfully' });
     } catch (err) {
@@ -617,7 +617,7 @@ router.put('/api/comments/:id/:action', upload.none(), async (req, res) => {
 router.delete('/api/comments/:id', async (req, res) => {
     try {
         const result = await pool.query('DELETE FROM comments WHERE id = $1', [req.params.id]);
-        
+
         if (result.rowCount === 0) {
             return res.status(404).json({ success: false, error: 'Comment not found' });
         }
@@ -633,7 +633,7 @@ router.delete('/api/comments/:id', async (req, res) => {
 router.post('/api/categories', upload.none(), async (req, res) => {
     try {
         const { name, description } = req.body;
-        
+
         if (!name || !name.trim()) {
             return res.status(400).json({ success: false, error: 'Category name is required' });
         }
@@ -652,7 +652,7 @@ router.post('/api/categories', upload.none(), async (req, res) => {
             'INSERT INTO categories (name, description) VALUES ($1, $2)',
             [name.trim(), description?.trim() || null]
         );
-        
+
         res.json({ success: true, message: 'Category created successfully' });
     } catch (err) {
         console.error('Error creating category:', err);
@@ -668,7 +668,7 @@ router.post('/api/categories', upload.none(), async (req, res) => {
 router.put('/api/categories/:id', upload.none(), async (req, res) => {
     try {
         const { name, description } = req.body;
-        
+
         if (!name || !name.trim()) {
             return res.status(400).json({ success: false, error: 'Category name is required' });
         }
@@ -710,14 +710,14 @@ router.delete('/api/categories/:id', async (req, res) => {
         // Check if any posts are using this category
         const postCount = await pool.query('SELECT COUNT(*) FROM Post_Categories WHERE category_id = $1', [id]);
         if (parseInt(postCount.rows[0].count) > 0) {
-            return res.status(400).json({ 
-                success: false, 
+            return res.status(400).json({
+                success: false,
                 error: `Cannot delete category. It is used by ${postCount.rows[0].count} post(s). Please remove the category from all posts first.`
             });
         }
 
         const result = await pool.query('DELETE FROM categories WHERE id = $1', [id]);
-        
+
         if (result.rowCount === 0) {
             return res.status(404).json({ success: false, error: 'Category not found' });
         }
@@ -749,7 +749,7 @@ router.post('/api/markdown-preview', upload.none(), (req, res) => {
 router.post('/api/tags', upload.none(), async (req, res) => {
     try {
         const { name } = req.body;
-        
+
         if (!name || !name.trim()) {
             return res.status(400).json({ success: false, error: 'Tag name is required' });
         }
@@ -778,7 +778,7 @@ router.post('/api/tags', upload.none(), async (req, res) => {
 router.put('/api/tags/:id', upload.none(), async (req, res) => {
     try {
         const { name } = req.body;
-        
+
         if (!name || !name.trim()) {
             return res.status(400).json({ success: false, error: 'Tag name is required' });
         }
@@ -792,7 +792,7 @@ router.put('/api/tags/:id', upload.none(), async (req, res) => {
         }
 
         const result = await pool.query('UPDATE tags SET name = $1 WHERE id = $2', [normalizedTagName, req.params.id]);
-        
+
         if (result.rowCount === 0) {
             return res.status(404).json({ success: false, error: 'Tag not found' });
         }
@@ -814,19 +814,19 @@ router.delete('/api/tags/:id', async (req, res) => {
         // Check if any posts are using this tag
         const postCount = await pool.query('SELECT COUNT(*) FROM Post_Tags WHERE tag_id = $1', [req.params.id]);
         const count = parseInt(postCount.rows[0].count);
-        
+
         if (count > 0) {
             // Remove tag from all posts before deletion
             await pool.query('DELETE FROM Post_Tags WHERE tag_id = $1', [req.params.id]);
         }
 
         const result = await pool.query('DELETE FROM tags WHERE id = $1', [req.params.id]);
-        
+
         if (result.rowCount === 0) {
             return res.status(404).json({ success: false, error: 'Tag not found' });
         }
 
-        const message = count > 0 
+        const message = count > 0
             ? `Tag deleted successfully and removed from ${count} post(s)`
             : 'Tag deleted successfully';
 
@@ -879,43 +879,43 @@ router.get('/api/download-all-data', async (req, res) => {
 router.post('/api/upload-image', uploadRateLimiter, upload.single('image'), async (req, res) => {
     const fs = await import('fs');
     let tempFilePath = null;
-    
+
     try {
         // Authentication check
         if (!req.session?.user?.username) {
             return res.status(401).json({ error: 'Authentication required' });
         }
-        
+
         // Role-based authorization
         if (req.session.user.role !== 'SuperAdmin') {
             return res.status(403).json({ error: 'Insufficient permissions' });
         }
-        
+
         if (!req.file) {
             return res.status(400).json({ error: 'No image file provided' });
         }
 
         const file = req.file;
         tempFilePath = file.path;
-        
+
         // Read file buffer for signature validation
         const fileBuffer = await fs.default.promises.readFile(tempFilePath);
-        
+
         // Validate file signature against declared MIME type
         if (!validateFileSignature(fileBuffer, file.mimetype)) {
             await fs.default.promises.unlink(tempFilePath);
             return res.status(400).json({ error: 'File signature does not match declared type' });
         }
-        
+
         // Additional security checks
         if (fileBuffer.length !== file.size) {
             await fs.default.promises.unlink(tempFilePath);
             return res.status(400).json({ error: 'File size mismatch' });
         }
-        
+
         // Generate secure filename
         const secureFileName = generateSecureFilename(file.originalname);
-        
+
         // Upload to R2 with enhanced metadata
         const uploadResult = await uploadFile(
             secureFileName,
@@ -931,16 +931,16 @@ router.post('/api/upload-image', uploadRateLimiter, upload.single('image'), asyn
                 }
             }
         );
-        
+
         // Clean up temp file
         await fs.default.promises.unlink(tempFilePath);
 
         // Generate public URL using our local image serving route
         const publicUrl = `/images/${secureFileName}`;
-        
+
         // Log successful upload for audit
         console.log(`Image uploaded successfully: ${secureFileName} by ${req.session.user.username}`);
-        
+
         res.json({
             success: true,
             url: publicUrl,
@@ -948,7 +948,7 @@ router.post('/api/upload-image', uploadRateLimiter, upload.single('image'), asyn
             size: file.size,
             type: file.mimetype
         });
-        
+
     } catch (err) {
         // Clean up temp file on error
         if (tempFilePath) {
@@ -959,13 +959,13 @@ router.post('/api/upload-image', uploadRateLimiter, upload.single('image'), asyn
                 console.error('Error cleaning up temp file:', cleanupErr);
             }
         }
-        
+
         console.error('Image upload error:', {
             error: err.message,
             user: req.session?.user?.username,
             timestamp: new Date().toISOString()
         });
-        
+
         // Return generic error message
         res.status(500).json({ error: 'Failed to upload image' });
     }
@@ -979,7 +979,7 @@ router.post('/api/r2/list-images', uploadRateLimiter, upload.none(), async (req,
     }
     try {
         const { prefix = '', searchTerm = '', maxKeys = 20, continuationToken } = req.body;
-        
+
         // List files with the specified prefix
         const filesResult = await listfiles(prefix, {
             maxKeys: parseInt(maxKeys),
@@ -990,16 +990,16 @@ router.post('/api/r2/list-images', uploadRateLimiter, upload.none(), async (req,
         const imageExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.svg'];
         let images = (filesResult.Contents || []).filter(file => {
             if (!file.Key) return false;
-            
-            const isImage = imageExtensions.some(ext => 
+
+            const isImage = imageExtensions.some(ext =>
                 file.Key.toLowerCase().endsWith(ext)
             );
-            
+
             // Apply search filter if provided
             if (searchTerm && !file.Key.toLowerCase().includes(searchTerm.toLowerCase())) {
                 return false;
             }
-            
+
             return isImage;
         });
 
@@ -1031,97 +1031,218 @@ router.post('/api/r2/list-images', uploadRateLimiter, upload.none(), async (req,
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
 router.post('/api/ai-assist', async (req, res) => {
-    // 1. Security Check
-    if (!req.session?.user) return res.status(401).json({ success: false, error: 'Unauthorized' });
-    if (!process.env.GEMINI_API_KEY) return res.status(500).json({ success: false, error: 'Gemini API Key missing' });
 
-    const { action, prompt, context } = req.body;
+    const { action, prompt, context = {} } = req.body;
+
+    console.log('[AI-Assist] Request received:', {
+        action,
+        promptPreview: prompt?.substring(0, 50),
+        contextKeys: Object.keys(context)
+    });
 
     try {
-        // *** CRITICAL FIX: Use "gemini-1.5-flash" for high free tier limits ***
-        // Do NOT use "gemini-2.5-flash" or experimental versions
-        const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash-lite" });
+        /* ---------- MODEL ---------- */
+        // Stable + high free-tier limits
+        const model = genAI.getGenerativeModel({
+            model: 'gemini-2.5-flash-lite'
+        });
 
-        let systemInstruction = "";
-        let userPrompt = prompt;
+        let systemInstruction = '';
+        let userPrompt = '';
         let isJsonMode = false;
 
-        /* --- PROMPT ENGINEERING --- */
+        /* ---------- PROMPT ENGINE ---------- */
 
         if (action === 'tags') {
-            systemInstruction = `You are an SEO Specialist. Return exactly 5 to 8 comma-separated tags (lowercase). No hash symbols.`;
-            userPrompt = `Generate tags for: "${context.content.substring(0, 3000)}..."`;
-        } 
-        else if (action === 'categories') {
-            const catsResult = await pool.query('SELECT id, name FROM Categories');
-            const availableCats = catsResult.rows.map(c => ({ id: c.id, name: c.name }));
-            
-            isJsonMode = true;
-            systemInstruction = `You are a Classifier. Return JSON: { "categoryIds": [int] }. Match content to specific categories.`;
-            userPrompt = `Categories: ${JSON.stringify(availableCats)}. Content: "${context.content.substring(0, 1500)}..."`;
-        }
-        else if (action === 'title') {
-            systemInstruction = `You are a Blog Title Expert. Write ONE catchy, SEO-friendly title. No quotes. Max 60 chars.`;
-            userPrompt = context.currentTitle 
-                ? `Rewrite: "${context.currentTitle}"`
-                : `Generate title for: "${context.content.substring(0, 1000)}..."`;
-        }
-        else if (action === 'excerpt') {
-            systemInstruction = `You are an Editor. Write a 2-sentence SEO summary/hook. Max 160 chars.`;
-            userPrompt = `Summarize: "${context.content.substring(0, 2000)}..."`;
-        }
-        else if (action === 'content') {
-            systemInstruction = `You are a Technical Writer. Write in Markdown. Use ## for headers. Keep flow natural.`;
-            userPrompt = context.content 
-                ? `Improve grammar and formatting: "${context.content}"`
-                : `Write blog intro for title: "${context.title}"`;
-        }
-        else {
-            systemInstruction = `You are a helpful AI blog assistant. Be concise.`;
-            userPrompt = `Context: [Title: ${context.title}]\nRequest: ${prompt}`;
+            systemInstruction = `
+You are an SEO specialist.
+Return EXACTLY 5–8 comma-separated tags.
+Lowercase only.
+No hashtags.
+No explanations.
+`.trim();
+
+            userPrompt = `
+Content:
+${context.content?.substring(0, 3000) || ''}
+`.trim();
         }
 
-        /* --- EXECUTE --- */
+        else if (action === 'categories') {
+            const catsResult = await pool.query(
+                'SELECT id, name FROM Categories'
+            );
+
+            const availableCats = catsResult.rows.map(c => ({
+                id: c.id,
+                name: c.name
+            }));
+
+            isJsonMode = true;
+
+            systemInstruction = `
+You are a content classifier.
+Return JSON ONLY in this format:
+{ "categoryIds": [number] }
+Do not include explanations.
+`.trim();
+
+            userPrompt = `
+Categories:
+${JSON.stringify(availableCats)}
+
+Content:
+${context.content?.substring(0, 1500) || ''}
+`.trim();
+        }
+
+        else if (action === 'title') {
+            systemInstruction = `
+You are a Blog Title Expert.
+Write ONE catchy, SEO-friendly blog title.
+Max 60 characters.
+No quotes.
+No explanations.
+Return ONLY the title text.
+`.trim();
+
+            userPrompt = `
+User instruction:
+${prompt || 'Generate a blog title'}
+
+Current title:
+${context.currentTitle || 'None'}
+
+Content:
+${context.content?.substring(0, 1000) || ''}
+`.trim();
+        }
+
+        else if (action === 'excerpt') {
+            systemInstruction = `
+You are a professional editor.
+Write a 2-sentence SEO-friendly excerpt.
+Max 160 characters.
+No quotes.
+No explanations.
+`.trim();
+
+            userPrompt = `
+Content:
+${context.content?.substring(0, 2000) || ''}
+
+Current title:
+${context.currentTitle || 'None'}
+Content:
+${context.content?.substring(0, 1000) || ''}
+`.trim();
+
+        }
+
+        else if (action === 'content') {
+            systemInstruction = `
+You are a technical blog writer.
+Write in Markdown.
+Use ## for section headers.
+Keep tone clear and natural.
+No filler.
+`.trim();
+
+            userPrompt = context.content
+                ? `Improve grammar and formatting:\n${context.content}`
+                : `Write a blog introduction for this title:\n${context.title || ''}
+                excerpt: ${context.excerpt || ''}
+                Content:${context.content?.substring(0, 1000) || ''}`;
+        }
+
+        else {
+            systemInstruction = `
+You are a helpful AI blog assistant.
+Be concise and direct.
+`.trim();
+
+            userPrompt = `
+Title: ${context.title || 'N/A'}
+Request: ${prompt || ''}
+`.trim();
+        }
+
+        /* ---------- GENERATION ---------- */
+
         const generationConfig = {
-            responseMimeType: isJsonMode ? "application/json" : "text/plain",
             temperature: 0.7,
+            responseMimeType: isJsonMode
+                ? 'application/json'
+                : 'text/plain'
         };
 
+        console.log('[AI-Assist] Calling Gemini', {
+            action,
+            jsonMode: isJsonMode
+        });
+
         const result = await model.generateContent({
-            contents: [{ role: 'user', parts: [{ text: systemInstruction + "\n\n" + userPrompt }] }],
-            generationConfig: generationConfig
+            contents: [
+                {
+                    role: 'user',
+                    parts: [
+                        {
+                            text: `${systemInstruction}\n\n${userPrompt}`
+                        }
+                    ]
+                }
+            ],
+            generationConfig
         });
 
         const response = await result.response;
         let reply = response.text();
 
-        // Cleanup
+        console.log('[AI-Assist] Raw response:', reply?.substring(0, 120));
+
+        /* ---------- CLEANUP ---------- */
+
         if (isJsonMode) {
             reply = reply.replace(/```json|```/g, '').trim();
+
             try {
                 reply = JSON.parse(reply);
-            } catch (e) {
-                console.error("JSON Parse Error", e);
-                reply = { categoryIds: [] }; // Fallback
+            } catch (err) {
+                console.error('[AI-Assist] JSON parse failed', err);
+                reply = { categoryIds: [] };
             }
         } else {
-            reply = reply.replace(/^"|"$/g, '').trim(); // Remove surrounding quotes
+            reply = reply
+                .replace(/^"|"$/g, '')     // remove wrapping quotes
+                .split('\n')[0]            // enforce single-line output
+                .trim();
         }
 
-        res.json({ success: true, data: reply });
+        console.log('[AI-Assist] Final reply:', reply);
+
+        res.json({
+            success: true,
+            data: reply
+        });
 
     } catch (err) {
-        console.error('Gemini API Error:', err.message);
-        
-        // Handle Rate Limits gracefully
-        if (err.status === 429 || err.message.includes('429')) {
-            return res.status(429).json({ 
-                success: false, 
-                error: 'AI Usage Limit Reached. Please wait 1 minute before trying again.' 
+        console.error('[AI-Assist] Error:', {
+            message: err.message,
+            status: err.status
+        });
+
+        if (err.status === 429 || err.message?.includes('429')) {
+            return res.status(429).json({
+                success: false,
+                error: 'AI usage limit reached. Please wait and try again.'
             });
         }
 
-        res.status(500).json({ success: false, error: 'AI Service Error. Please try again later.' });
+        res.status(500).json({
+            success: false,
+            error: 'AI service error. Please try again later.'
+        });
     }
 });
+
 export default router;
