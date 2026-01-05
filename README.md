@@ -255,6 +255,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ## 👤 Author
 
 **Muhammad Bin Khalid**
-- Website: [mbktechstudio.com](https://www.mbktechstudio.com)
+- Website: [mbktech.org](https://mbktech.org)
 - Blog: [blog.mbktech.org](https://blog.mbktech.org)
 - GitHub: [@Mibnekhalid](https://github.com/Mibnekhalid)

@@ -11,11 +11,16 @@ import dashboardRouter from './routes/dashboard.js';
 import compression from "compression";
 import rateLimit from 'express-rate-limit';
 import cookieParser from "cookie-parser";
+import { readFileSync } from "fs";
 
 dotenv.config();
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+
+// Cache buster version (based on package.json version)
+const packageJson = JSON.parse(readFileSync(path.join(__dirname, 'package.json'), 'utf-8'));
+const CACHE_VERSION = packageJson.version;
 
 const server = express();
 server.set('trust proxy', 1);
@@ -61,6 +66,7 @@ server.use("/Assets", express.static(path.join(__dirname, "public/Assets"), {
     }
     res.setHeader("Access-Control-Allow-Origin", "*");
     res.setHeader("Cross-Origin-Resource-Policy", "cross-origin");
+    
     if (
       path.endsWith(".js") ||
       path.endsWith(".css") ||
@@ -68,7 +74,7 @@ server.use("/Assets", express.static(path.join(__dirname, "public/Assets"), {
       path.endsWith(".jpg") ||
       path.endsWith(".svg")
     ) {
-      res.setHeader("Cache-Control", "public, max-age=604800");
+      res.setHeader("Cache-Control", "public, max-age=2592000, immutable");
     } else {
       res.setHeader("Cache-Control", "public, max-age=86400");
     }
@@ -239,6 +245,9 @@ server.engine("handlebars", engine({
       const category = categories.find(c => c.id === categoryId);
       return category ? category.name : '';
     },
+    cacheBuster: function () {
+      return CACHE_VERSION;
+    },
     add: function (a, b) {
       return Number(a) + Number(b);
     },
@@ -306,8 +315,12 @@ server.use((req, res) => {
 });
 
 const port = process.env.PORT || 3126;
-server.listen(port, async () => {
-  console.log(`Server running on http://localhost:${port}`);
-});
+
+// Only start the server if this file is being run directly (not imported for testing)
+if (import.meta.url === `file://${process.argv[1]}` || process.env.NODE_ENV !== 'test') {
+  server.listen(port, async () => {
+    console.log(`Server running on http://localhost:${port}`);
+  });
+}
 
 export default server;

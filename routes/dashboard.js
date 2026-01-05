@@ -392,6 +392,8 @@ router.post('/api/posts', async (req, res) => {
                 } else if (Array.isArray(categories)) {
                     categoryIds = categories;
                 }
+                // Convert all category IDs to numbers
+                categoryIds = categoryIds.map(id => parseInt(id, 10)).filter(id => !isNaN(id));
             } catch (e) {
                 await client.query('ROLLBACK');
                 return res.status(400).json({ message: 'Invalid categories format' });
@@ -481,6 +483,8 @@ router.put('/api/posts/:id', async (req, res) => {
                 } else if (Array.isArray(categories)) {
                     categoryIds = categories;
                 }
+                // Convert all category IDs to numbers
+                categoryIds = categoryIds.map(id => parseInt(id, 10)).filter(id => !isNaN(id));
             } catch (e) {
                 await client.query('ROLLBACK');
                 return res.status(400).json({ message: 'Invalid categories format' });

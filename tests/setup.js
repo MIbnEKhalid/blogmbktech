@@ -3,9 +3,17 @@ import { jest } from '@jest/globals';
 
 // Mock multer
 jest.mock('multer', () => {
-    return () => ({
-        none: () => (req, res, next) => next()
-    });
+    const multerMock = jest.fn(() => ({
+        none: () => (req, res, next) => next(),
+        single: () => (req, res, next) => next(),
+        array: () => (req, res, next) => next()
+    }));
+    
+    // Add diskStorage method to the mock
+    multerMock.diskStorage = jest.fn(() => ({}));
+    multerMock.memoryStorage = jest.fn(() => ({}));
+    
+    return multerMock;
 });
 
 // Create mockable objects with jest.fn
