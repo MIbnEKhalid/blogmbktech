@@ -7,40 +7,8 @@ export class ActivityLogRepository extends BaseRepository {
     this.tablesInitialized = false;
   }
 
-  async initializeAdminTables() {
-    if (this.tablesInitialized) return;
-    try {
-      await this.query(`
-        CREATE TABLE IF NOT EXISTS blog_activity_logs (
-          id SERIAL PRIMARY KEY,
-          action VARCHAR(100) NOT NULL,
-          entity_type VARCHAR(50) NOT NULL,
-          entity_id INTEGER,
-          entity_title TEXT,
-          details TEXT,
-          username VARCHAR(50),
-          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        );
-
-        CREATE INDEX IF NOT EXISTS idx_blog_activity_logs_created_at ON blog_activity_logs(created_at DESC);
-        CREATE INDEX IF NOT EXISTS idx_blog_activity_logs_entity ON blog_activity_logs(entity_type, entity_id);
-        CREATE INDEX IF NOT EXISTS idx_blog_activity_logs_username ON blog_activity_logs(username);
-
-        CREATE TABLE IF NOT EXISTS blog_settings (
-          key VARCHAR(100) PRIMARY KEY,
-          value TEXT,
-          updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        );
-      `);
-      this.tablesInitialized = true;
-    } catch (err) {
-      console.error('Error initializing admin tables:', err.message);
-    }
-  }
-
   async logActivity({ action, entityType, entityId = null, entityTitle = null, details = null, username = 'admin' }) {
     try {
-      await this.initializeAdminTables();
       await this.query(
         `INSERT INTO blog_activity_logs (action, entity_type, entity_id, entity_title, details, username) 
          VALUES ($1, $2, $3, $4, $5, $6)`,
