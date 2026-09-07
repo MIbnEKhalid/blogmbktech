@@ -1,7 +1,10 @@
 import { activityLogRepository } from '../repositories/index.js';
 
 export async function initializeAdminTables() {
-    return activityLogRepository.initializeAdminTables();
+    if (typeof activityLogRepository.initializeAdminTables === 'function') {
+        return activityLogRepository.initializeAdminTables();
+    }
+    return Promise.resolve(true);
 }
 
 // Auto-run initialization on load

@@ -7,6 +7,10 @@ export class ActivityLogRepository extends BaseRepository {
     this.tablesInitialized = false;
   }
 
+  async initializeAdminTables() {
+    return true;
+  }
+
   async logActivity({ action, entityType, entityId = null, entityTitle = null, details = null, username = 'admin' }) {
     try {
       await this.query(

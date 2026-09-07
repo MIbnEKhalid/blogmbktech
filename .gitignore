@@ -91,7 +91,6 @@ out
 # Nuxt.js build / generate output
 .nuxt
 dist
-package-lock.json
 
 # Gatsby files
 .cache/
@@ -140,6 +139,4 @@ package-lock.json
 # Disable caching for now
 public/posts/
 
-data/
-
-package-lock.json
+data/
