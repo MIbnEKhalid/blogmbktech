@@ -1,34 +1,24 @@
-import { pool } from '../config/db.js';
-import { marked } from 'marked';
-import Prism from 'prismjs';
-import { JSDOM } from 'jsdom';
-import DOMPurify from 'dompurify';
 import { downloadFile } from 'mbkbucket';
 import fs from 'fs';
 import path from 'path';
 import { PUBLIC_DIR } from '../config/constants.js';
-
-marked.setOptions({
-    highlight: (code, lang) => Prism.languages[lang] ? Prism.highlight(code, Prism.languages[lang], lang) : code,
-    breaks: true,
-    gfm: true
-});
-
-const purify = DOMPurify(new JSDOM('').window);
+import { postRepository, taxonomyRepository, commentRepository } from '../repositories/index.js';
+import { renderMarkdown, purify } from '../utils/markdown.js';
 const PAGE_LIMIT = 10;
 const ALLOWED_IMAGE_EXTS = new Set(['.jpg', '.jpeg', '.png', '.gif', '.webp', '.svg']);
 const ALLOWED_REFERRERS = ['mbktech.org', 'localhost'];
 
 // Single unified helpers for role and post visibility checks
-const isSuperAdmin = (req) => Boolean(req?.session?.user?.role === 'SuperAdmin');
-const getStatusSql = (req) => isSuperAdmin(req) ? "IN ('published', 'private')" : "= 'published'";
+const issuperadmin = (req) => Boolean(req?.session?.user?.role === 'superadmin');
+const getStatusSql = (req) => issuperadmin(req) ? "IN ('published', 'private')" : "= 'published'";
 
 // Helper to extract unique authors and categories in a single pass
 function extractUniqueMeta(posts) {
     const authors = new Set();
     const categories = new Set();
     for (const post of posts) {
-        if (post.UserName) authors.add(post.UserName);
+        const author = post.username;
+        if (author) authors.add(author);
         if (post.categories) {
             for (const cat of post.categories.split(',')) {
                 const trimmed = cat.trim();
@@ -42,43 +32,16 @@ function extractUniqueMeta(posts) {
     };
 }
 
-// Unified post fetcher for listing routes
-async function fetchPostList({ whereClause, joinClause = '', params = [], limit = PAGE_LIMIT, offset = 0 }) {
-    const [countRes, postsRes] = await Promise.all([
-        pool.query(`SELECT COUNT(DISTINCT p.id) as total FROM Posts p ${joinClause} ${whereClause}`, params),
-        pool.query(`
-            SELECT p.*, 
-                   STRING_AGG(DISTINCT c.name, ', ') as categories,
-                   (SELECT COUNT(*) FROM Comments WHERE post_id = p.id) as comment_count,
-                   u."UserName",
-                   u."Image" as author_image
-            FROM Posts p
-            ${joinClause}
-            LEFT JOIN Post_Categories pc ON p.id = pc.post_id
-            LEFT JOIN Categories c ON pc.category_id = c.id
-            LEFT JOIN "Users" u ON p."UserName" = u."UserName"
-            ${whereClause}
-            GROUP BY p.id, u."UserName", u."Image"
-            ORDER BY p.created_at DESC
-            LIMIT $${params.length + 1} OFFSET $${params.length + 2}
-        `, [...params, limit, offset])
-    ]);
-
-    const totalPosts = parseInt(countRes.rows[0]?.total || 0);
-    const totalPages = Math.ceil(totalPosts / limit) || 1;
-    return { posts: postsRes.rows || [], totalPosts, totalPages };
-}
-
 /**
  * 1. Home / All Posts
  */
 export async function getHome(req, res) {
     try {
-        const page = parseInt(req.query.page) || 1;
+        const page = parseInt(req.query.page, 10) || 1;
         const offset = (page - 1) * PAGE_LIMIT;
         const whereClause = `WHERE p.status ${getStatusSql(req)}`;
 
-        const { posts, totalPosts, totalPages } = await fetchPostList({ whereClause, offset });
+        const { posts, totalPosts, totalPages } = await postRepository.fetchPostList({ whereClause, offset });
         const { uniqueAuthors, uniqueCategories } = extractUniqueMeta(posts);
 
         res.render('blog/index.handlebars', {
@@ -100,16 +63,7 @@ export async function getHome(req, res) {
 export async function getCategoriesArchive(req, res) {
     try {
         const statusFilter = `AND p.status ${getStatusSql(req)}`;
-
-        const result = await pool.query(`
-            SELECT c.*, COUNT(DISTINCT pc.post_id) as post_count
-            FROM Categories c
-            LEFT JOIN Post_Categories pc ON c.id = pc.category_id
-            LEFT JOIN Posts p ON pc.post_id = p.id ${statusFilter}
-            WHERE p.id IS NOT NULL
-            GROUP BY c.id
-            ORDER BY c.name ASC
-        `);
+        const result = await taxonomyRepository.getCategoriesArchive(statusFilter);
 
         res.render('blog/archive.handlebars', {
             categories: result.rows || [],
@@ -128,16 +82,7 @@ export async function getCategoriesArchive(req, res) {
 export async function getTagsArchive(req, res) {
     try {
         const statusFilter = `AND p.status ${getStatusSql(req)}`;
-
-        const result = await pool.query(`
-            SELECT t.*, COUNT(DISTINCT pt.post_id) as post_count
-            FROM Tags t
-            LEFT JOIN Post_Tags pt ON t.id = pt.tag_id
-            LEFT JOIN Posts p ON pt.post_id = p.id ${statusFilter}
-            WHERE p.id IS NOT NULL
-            GROUP BY t.id
-            ORDER BY t.name ASC
-        `);
+        const result = await taxonomyRepository.getTagsArchive(statusFilter);
 
         res.render('blog/archive.handlebars', {
             tags: result.rows || [],
@@ -156,11 +101,11 @@ export async function getTagsArchive(req, res) {
 export async function getPostsByAuthor(req, res) {
     try {
         const { username } = req.params;
-        const page = parseInt(req.query.page) || 1;
+        const page = parseInt(req.query.page, 10) || 1;
         const offset = (page - 1) * PAGE_LIMIT;
-        const whereClause = `WHERE p.status ${getStatusSql(req)} AND p."UserName" = $1`;
+        const whereClause = `WHERE p.status ${getStatusSql(req)} AND p.username = $1`;
 
-        const { posts, totalPosts, totalPages } = await fetchPostList({ whereClause, params: [username], offset });
+        const { posts, totalPosts, totalPages } = await postRepository.fetchPostList({ whereClause, params: [username], offset });
         const { uniqueCategories } = extractUniqueMeta(posts);
 
         res.render('blog/archive.handlebars', {
@@ -183,18 +128,18 @@ export async function getPostsByAuthor(req, res) {
 export async function getPostsByCategory(req, res) {
     try {
         const { categoryName } = req.params;
-        const page = parseInt(req.query.page) || 1;
+        const page = parseInt(req.query.page, 10) || 1;
         const offset = (page - 1) * PAGE_LIMIT;
 
-        const category = await pool.query('SELECT * FROM Categories WHERE name = $1', [categoryName]);
+        const category = await taxonomyRepository.getCategoryByName(categoryName);
         if (!category.rows[0]) {
             return res.status(404).render('error.handlebars', { message: 'Category not found', code: 404 });
         }
 
-        const joinClause = 'INNER JOIN Post_Categories filter_pc ON p.id = filter_pc.post_id AND filter_pc.category_id = $1';
+        const joinClause = 'INNER JOIN blog_post_categories filter_pc ON p.id = filter_pc.post_id AND filter_pc.category_id = $1';
         const whereClause = `WHERE p.status ${getStatusSql(req)}`;
 
-        const { posts, totalPosts, totalPages } = await fetchPostList({
+        const { posts, totalPosts, totalPages } = await postRepository.fetchPostList({
             whereClause,
             joinClause,
             params: [category.rows[0].id],
@@ -222,18 +167,18 @@ export async function getPostsByCategory(req, res) {
 export async function getPostsByTag(req, res) {
     try {
         const { tagName } = req.params;
-        const page = parseInt(req.query.page) || 1;
+        const page = parseInt(req.query.page, 10) || 1;
         const offset = (page - 1) * PAGE_LIMIT;
 
-        const tag = await pool.query('SELECT * FROM Tags WHERE name = $1', [tagName]);
+        const tag = await taxonomyRepository.getTagByName(tagName);
         if (!tag.rows[0]) {
             return res.status(404).render('error.handlebars', { message: 'Tag not found', code: 404 });
         }
 
-        const joinClause = 'INNER JOIN Post_Tags filter_pt ON p.id = filter_pt.post_id AND filter_pt.tag_id = $1';
+        const joinClause = 'INNER JOIN blog_post_tags filter_pt ON p.id = filter_pt.post_id AND filter_pt.tag_id = $1';
         const whereClause = `WHERE p.status ${getStatusSql(req)}`;
 
-        const { posts, totalPosts, totalPages } = await fetchPostList({
+        const { posts, totalPosts, totalPages } = await postRepository.fetchPostList({
             whereClause,
             joinClause,
             params: [tag.rows[0].id],
@@ -278,29 +223,16 @@ export async function getPostBySlug(req, res) {
             }
         }
 
-        const postResult = await pool.query(`
-            SELECT p.*, 
-                   STRING_AGG(DISTINCT c.name, ', ') as categories,
-                   u."UserName" as author_name,
-                   u."Image" as author_image,
-                   ARRAY_AGG(DISTINCT c.id) FILTER (WHERE c.id IS NOT NULL) as category_ids,
-                   ARRAY_AGG(DISTINCT c.name) FILTER (WHERE c.name IS NOT NULL) as category_names
-            FROM Posts p
-            LEFT JOIN "Users" u ON p."UserName" = u."UserName"
-            LEFT JOIN Post_Categories pc ON p.id = pc.post_id
-            LEFT JOIN Categories c ON pc.category_id = c.id
-            WHERE p.slug = $1 AND p.status IN ('published', 'private')
-            GROUP BY p.id, u."UserName", u."Image"
-        `, [slug]);
-
+        const postResult = await postRepository.findBySlug(slug);
         const post = postResult.rows[0];
         if (!post) {
             return res.status(404).render('error.handlebars', { message: 'Post not found', code: 404 });
         }
 
         const user = req.session?.user;
-        const isAdmin = isSuperAdmin(req);
-        const isOwner = user && user.username === post.author_name;
+        const isAdmin = issuperadmin(req);
+        const currentUsername = user?.username;
+        const isOwner = currentUsername && currentUsername === (post.author_name || post.username);
 
         if (post.status === 'private' && !isOwner && !isAdmin) {
             return res.status(403).render('error.handlebars', { message: 'This post is private. Only the owner can see it.', code: 403 });
@@ -326,68 +258,27 @@ export async function getPostBySlug(req, res) {
             });
 
             res.on('finish', () => {
-                pool.query('UPDATE Posts SET views = views + 1 WHERE id = $1', [postId]).catch(console.error);
+                postRepository.incrementViews(postId).catch(console.error);
             });
         }
 
         // Markdown rendering
         post.content_html = post.content_markdown
-            ? purify.sanitize(marked(post.content_markdown))
+            ? renderMarkdown(post.content_markdown)
             : (post.content || '');
 
         // Fetch tags, comments, and related posts in parallel
         const commentsWhere = isAdmin
             ? 'WHERE c.post_id = $1'
-            : (user ? 'WHERE c.post_id = $1 AND (c.is_approved = true OR c."UserName" = $2)' : 'WHERE c.post_id = $1 AND c.is_approved = true');
-        const commentsParams = (user && !isAdmin) ? [post.id, user.username] : [post.id];
+            : (currentUsername ? 'WHERE c.post_id = $1 AND (c.is_approved = true OR c.username = $2)' : 'WHERE c.post_id = $1 AND c.is_approved = true');
+        const commentsParams = (currentUsername && !isAdmin) ? [post.id, currentUsername] : [post.id];
 
         const categoryIds = (post.category_ids || []).filter(Boolean);
-        const relatedQuery = categoryIds.length > 0
-            ? pool.query(`
-                SELECT DISTINCT p.id, p.title, p.slug, p.preview_image, p.created_at, p.content_markdown,
-                       u."UserName",
-                       u."Image" as author_image,
-                       STRING_AGG(DISTINCT c.name, ', ') as categories
-                FROM Posts p
-                LEFT JOIN "Users" u ON p."UserName" = u."UserName"
-                LEFT JOIN Post_Categories pc ON p.id = pc.post_id
-                LEFT JOIN Categories c ON pc.category_id = c.id
-                WHERE p.id != $1 AND p.status = 'published' AND pc.category_id = ANY($2::int[])
-                GROUP BY p.id, u."UserName", u."Image"
-                ORDER BY p.created_at DESC
-                LIMIT 3
-            `, [post.id, categoryIds])
-            : pool.query(`
-                SELECT DISTINCT p.id, p.title, p.slug, p.preview_image, p.created_at, p.content_markdown,
-                       u."UserName",
-                       u."Image" as author_image,
-                       STRING_AGG(DISTINCT c.name, ', ') as categories
-                FROM Posts p
-                LEFT JOIN "Users" u ON p."UserName" = u."UserName"
-                LEFT JOIN Post_Categories pc ON p.id = pc.post_id
-                LEFT JOIN Categories c ON pc.category_id = c.id
-                WHERE p.id != $1 AND p.status = 'published'
-                GROUP BY p.id, u."UserName", u."Image"
-                ORDER BY p.created_at DESC
-                LIMIT 3
-            `, [post.id]);
 
         const [tagsResult, commentsResult, relatedResult] = await Promise.all([
-            pool.query('SELECT t.name FROM Tags t INNER JOIN Post_Tags pt ON t.id = pt.tag_id WHERE pt.post_id = $1', [post.id]),
-            pool.query(`
-                SELECT c.id, c.content, c."UserName", c.created_at, c.parent_id, c.is_approved,
-                       u."UserName" as author_name,
-                       u."Image" as author_image,
-                       pc.content as parent_content, pu."UserName" as parent_author_name,
-                       pu."Image" as parent_author_image
-                FROM Comments c
-                LEFT JOIN "Users" u ON c."UserName" = u."UserName"
-                LEFT JOIN Comments pc ON c.parent_id = pc.id
-                LEFT JOIN "Users" pu ON pc."UserName" = pu."UserName"
-                ${commentsWhere}
-                ORDER BY c.created_at DESC
-            `, commentsParams),
-            relatedQuery.catch(err => {
+            postRepository.findPostTags(post.id),
+            commentRepository.getPostComments(commentsWhere, commentsParams),
+            postRepository.getRelatedPosts(post.id, categoryIds).catch(err => {
                 console.error('Error querying related posts:', err);
                 return { rows: [] };
             })
@@ -427,23 +318,21 @@ export async function createComment(req, res) {
     }
 
     try {
-        const post = await pool.query('SELECT id FROM Posts WHERE slug = $1 AND status = $2', [slug, 'published']);
+        const post = await postRepository.getPublishedPostBySlug(slug);
         if (!post.rows[0]) {
             return res.status(404).render('error.handlebars', { message: 'Post not found or not published', code: 404 });
         }
 
         const postId = post.rows[0].id;
         if (parent_id) {
-            const parent = await pool.query('SELECT id FROM Comments WHERE id = $1 AND post_id = $2', [parent_id, postId]);
+            const parent = await commentRepository.findPostParentComment(parent_id, postId);
             if (!parent.rows[0]) {
                 return res.status(400).render('error.handlebars', { message: 'Invalid parent comment', code: 400 });
             }
         }
 
-        await pool.query(
-            'INSERT INTO Comments (content, "UserName", post_id, parent_id) VALUES ($1, $2, $3, $4)',
-            [purify.sanitize(content.trim()), req.session.user.username, postId, parent_id || null]
-        );
+        const username = req.session?.user?.username || 'anonymous';
+        await commentRepository.createComment(purify.sanitize(content.trim()), username, postId, parent_id || null);
 
         res.redirect(`/post/${slug}`);
     } catch (err) {
@@ -474,22 +363,8 @@ export async function getBookmarks(req, res) {
             });
         }
 
-        const whereClause = `WHERE p.status ${getStatusSql(req)} AND p.id = ANY($1::int[])`;
-
-        const result = await pool.query(`
-            SELECT p.*, 
-                   STRING_AGG(DISTINCT c.name, ', ') as categories,
-                   (SELECT COUNT(*) FROM Comments WHERE post_id = p.id) as comment_count,
-                   u."UserName",
-                   u."Image" as author_image
-            FROM Posts p
-            LEFT JOIN Post_Categories pc ON p.id = pc.post_id
-            LEFT JOIN Categories c ON pc.category_id = c.id
-            LEFT JOIN "Users" u ON p."UserName" = u."UserName"
-            ${whereClause}
-            GROUP BY p.id, u."UserName", u."Image"
-            ORDER BY p.created_at DESC
-        `, [bookmarkIds]);
+        const statusFilter = getStatusSql(req);
+        const result = await postRepository.getBookmarkedPosts(bookmarkIds, statusFilter);
 
         res.render('blog/bookmarks.handlebars', {
             posts: result.rows || [],

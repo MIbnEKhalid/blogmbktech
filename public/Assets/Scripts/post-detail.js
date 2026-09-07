@@ -6,7 +6,7 @@
 
 // --- USER PROFILE PICTURE (PP) HYDRATION FOR POST VIEW ---
 function hydratePostAvatars() {
-    const cookiePp = window.getCookie ? window.getCookie('profileImageUrl') : null;
+    const cookiePp = window.getCookie ? window.getCookie('profile_image_url') : null;
     if (!cookiePp || cookiePp === 'default') return;
 
     // Update ONLY current user comment box avatar

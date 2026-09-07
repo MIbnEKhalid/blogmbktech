@@ -3,7 +3,7 @@
 <!-- Reading Progress Bar -->
 <div class="reading-progress-bar" id="readingProgressBar"></div>
 
-<div class="section-container post-page-container" data-post-author="{{post.UserName}}">
+<div class="section-container post-page-container" data-post-author="{{post.username}}">
     <div class="post-detail-layout">
 
         <!-- 1. Left Action Rail (Sticky on Desktop) -->
@@ -77,15 +77,15 @@
 
                     <div class="article-meta">
                         <div class="author-meta-block">
-                            <div class="author-avatar" data-username="{{post.UserName}}">
+                            <div class="author-avatar" data-username="{{post.username}}">
                                 {{#if post.author_image}}
-                                <img src="{{post.author_image}}" alt="{{post.UserName}}">
+                                <img src="{{post.author_image}}" alt="{{post.username}}">
                                 {{else}}
-                                <span class="avatar-initials">{{firstLetter post.UserName}}</span>
+                                <span class="avatar-initials">{{firstLetter post.username}}</span>
                                 {{/if}}
                             </div>
                             <div class="author-info-wrap">
-                                <a href="/author/{{post.UserName}}">{{post.UserName}}</a>
+                                <a href="/author/{{post.username}}">{{post.username}}</a>
                                 <span class="publish-date">Published on {{formatDate post.created_at}}</span>
                             </div>
                         </div>
@@ -162,17 +162,17 @@
 
                 <!-- Author Bio Box -->
                 <div class="author-bio-card">
-                    <div class="author-bio-avatar" data-username="{{post.UserName}}">
+                    <div class="author-bio-avatar" data-username="{{post.username}}">
                         {{#if post.author_image}}
-                        <img src="{{post.author_image}}" alt="{{post.UserName}}">
+                        <img src="{{post.author_image}}" alt="{{post.username}}">
                         {{else}}
-                        <span class="avatar-initials">{{firstLetter post.UserName}}</span>
+                        <span class="avatar-initials">{{firstLetter post.username}}</span>
                         {{/if}}
                     </div>
                     <div class="author-bio-info">
-                        <h3>Written by {{post.UserName}}</h3>
+                        <h3>Written by {{post.username}}</h3>
                         <p>Contributing writer and developer at MBK Tech. Sharing deep dives, tutorials, and insights into full-stack development and cloud engineering.</p>
-                        <a href="/author/{{post.UserName}}">View all articles by {{post.UserName}} <i class="fas fa-arrow-right"></i></a>
+                        <a href="/author/{{post.username}}">View all articles by {{post.username}} <i class="fas fa-arrow-right"></i></a>
                     </div>
                 </div>
             </article>
@@ -214,11 +214,11 @@
                             <div class="related-footer">
                                 <span class="related-author">
                                     {{#if this.author_image}}
-                                    <img src="{{this.author_image}}" alt="{{this.UserName}}" class="related-author-avatar">
+                                    <img src="{{this.author_image}}" alt="{{this.username}}" class="related-author-avatar">
                                     {{else}}
-                                    <span class="related-author-avatar-fallback">{{firstLetter this.UserName}}</span>
+                                    <span class="related-author-avatar-fallback">{{firstLetter this.username}}</span>
                                     {{/if}}
-                                    <span class="related-author-name">{{this.UserName}}</span>
+                                    <span class="related-author-name">{{this.username}}</span>
                                 </span>
                                 <a href="/post/{{this.slug}}" class="related-read-link">Read <i class="fas fa-chevron-right"></i></a>
                             </div>
@@ -248,8 +248,8 @@
                     <div class="comment-form-header">
                         <div class="comment-user-badge">
                             <div class="comment-avatar" data-current-user="true">
-                                {{#if profileImageUrl}}
-                                <img src="{{profileImageUrl}}" alt="{{user.username}}">
+                                {{#if profile_image_url}}
+                                <img src="{{profile_image_url}}" alt="{{user.username}}">
                                 {{else}}
                                 <span class="avatar-initials">{{firstLetter (coalesce user.username 'U')}}</span>
                                 {{/if}}
@@ -285,16 +285,16 @@
                         <div class="comment-card">
                             <div class="comment-header">
                                 <div class="comment-author-wrap">
-                                    <div class="comment-avatar" data-username="{{this.UserName}}">
+                                    <div class="comment-avatar" data-username="{{this.username}}">
                                         {{#if this.author_image}}
-                                        <img src="{{this.author_image}}" alt="{{this.UserName}}">
+                                        <img src="{{this.author_image}}" alt="{{this.username}}">
                                         {{else}}
-                                        <span class="avatar-initials">{{firstLetter this.UserName}}</span>
+                                        <span class="avatar-initials">{{firstLetter this.username}}</span>
                                         {{/if}}
                                     </div>
                                     <div>
                                         <div class="comment-author">
-                                            <a href="/author/{{this.UserName}}">{{this.UserName}}</a>
+                                            <a href="/author/{{this.username}}">{{this.username}}</a>
                                             {{#unless this.is_approved}}
                                              <span class="badge" style="background: var(--yellow-lt); color: var(--yellow); font-size: 0.75rem; padding: 0.1rem 0.4rem; border-radius: var(--radius-full); margin-left: 0.4rem;">Pending</span>
                                             {{/unless}}
@@ -308,12 +308,12 @@
 
                             <div class="comment-actions">
                                 {{#if ../user}}
-                                <button onclick="replyToComment('{{this.id}}', '{{this.UserName}}')" class="comment-reply-btn">
+                                <button onclick="replyToComment('{{this.id}}', '{{this.username}}')" class="comment-reply-btn">
                                     <i class="fas fa-reply"></i> Reply
                                 </button>
                                 {{/if}}
 
-                                {{#if ../isSuperAdmin}}
+                                {{#if ../issuperadmin}}
                                 {{#unless this.is_approved}}
                                 <button onclick="approveComment('{{this.id}}')" class="btn btn-success btn-sm">
                                     <i class="fas fa-check"></i> Approve
@@ -344,15 +344,15 @@
                             <div class="comment-card">
                                 <div class="comment-header">
                                     <div class="comment-author-wrap">
-                                        <div class="comment-avatar" data-username="{{this.UserName}}">
+                                        <div class="comment-avatar" data-username="{{this.username}}">
                                             {{#if this.author_image}}
-                                            <img src="{{this.author_image}}" alt="{{this.UserName}}">
+                                            <img src="{{this.author_image}}" alt="{{this.username}}">
                                             {{else}}
-                                            <span class="avatar-initials">{{firstLetter this.UserName}}</span>
+                                            <span class="avatar-initials">{{firstLetter this.username}}</span>
                                             {{/if}}
                                         </div>
                                         <div class="comment-author">
-                                            <a href="/author/{{this.UserName}}">{{this.UserName}}</a>
+                                            <a href="/author/{{this.username}}">{{this.username}}</a>
                                             {{#unless this.is_approved}}
                                             <span class="badge" style="background: var(--yellow-lt); color: var(--yellow); font-size: 0.75rem; padding: 0.1rem 0.4rem; border-radius: var(--radius-full); margin-left: 0.4rem;">Pending</span>
                                             {{/unless}}
@@ -361,7 +361,7 @@
                                     <span class="comment-date">{{formatDate this.created_at}}</span>
                                 </div>
                                 <div class="comment-body">{{this.content}}</div>
-                                {{#if ../../isSuperAdmin}}
+                                {{#if ../../issuperadmin}}
                                 <div class="comment-actions">
                                     {{#unless this.is_approved}}
                                     <button onclick="approveComment('{{this.id}}')" class="btn btn-success btn-sm">
@@ -395,21 +395,21 @@
                 <!-- Author Mini Profile Card -->
                 <div class="sidebar-widget author-mini-widget">
                     <div class="author-widget-header">
-                        <div class="author-avatar" data-username="{{post.UserName}}">
+                        <div class="author-avatar" data-username="{{post.username}}">
                             {{#if post.author_image}}
-                            <img src="{{post.author_image}}" alt="{{post.UserName}}">
+                            <img src="{{post.author_image}}" alt="{{post.username}}">
                             {{else}}
-                            <span class="avatar-initials">{{firstLetter post.UserName}}</span>
+                            <span class="avatar-initials">{{firstLetter post.username}}</span>
                             {{/if}}
                         </div>
                         <div class="author-widget-meta">
                             <span class="author-label">Written By</span>
-                            <a href="/author/{{post.UserName}}" class="author-name">{{post.UserName}}</a>
+                            <a href="/author/{{post.username}}" class="author-name">{{post.username}}</a>
                         </div>
                     </div>
                     <p class="author-widget-bio">Technical writer & developer at MBK Tech exploring full-stack engineering & cloud architecture.</p>
-                    <a href="/author/{{post.UserName}}" class="author-widget-link">
-                        <span>Articles by {{post.UserName}}</span>
+                    <a href="/author/{{post.username}}" class="author-widget-link">
+                        <span>Articles by {{post.username}}</span>
                         <i class="fas fa-arrow-right"></i>
                     </a>
                 </div>

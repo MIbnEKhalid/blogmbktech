@@ -4,7 +4,7 @@
 <script src="/Assets/Scripts/post-detail.js?v={{cacheBuster}}" defer></script>
 <title>{{post.title}} - MBK Tech Blog</title>
 <meta name="description" content="{{post.excerpt}}">
-<meta name="author" content="{{post.UserName}}">
+<meta name="author" content="{{post.username}}">
 <meta property="og:title" content="{{post.title}} - MBK Tech Blog">
 <meta property="og:description" content="{{post.excerpt}}">
 {{#if post.preview_image}}
@@ -16,7 +16,7 @@
 <meta property="article:modified_time" content="{{post.updated_at}}">
 <meta name="date" content="{{post.created_at}}">
 <meta name="last-modified" content="{{post.updated_at}}">
-<meta property="article:author" content="{{post.UserName}}">
+<meta property="article:author" content="{{post.username}}">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="{{post.title}}">
 <meta name="twitter:description" content="{{post.excerpt}}">
@@ -34,8 +34,8 @@
   "dateModified": "{{post.updated_at}}",
   "author": {
     "@type": "Person",
-    "name": "{{post.UserName}}",
-    "url": "https://blog.mbktech.org/author/{{post.UserName}}"
+    "name": "{{post.username}}",
+    "url": "https://blog.mbktech.org/author/{{post.username}}"
   },
   "publisher": {
     "@type": "Organization",

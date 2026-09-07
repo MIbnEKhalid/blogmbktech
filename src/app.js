@@ -78,12 +78,12 @@ server.use(cookieParser());
 // Session middleware (mbkauthe)
 server.use(mbkauthe);
 
-// Expose profileImageUrl cookie, session user, login status, and role to all views
 server.use((req, res, next) => {
-  res.locals.profileImageUrl = req.cookies?.profileImageUrl || req.session?.user?.profileImageUrl || null;
+  const rawProfileImg = req.cookies?.profile_image_url || req.session?.user?.image;
+  res.locals.profile_image_url = (rawProfileImg && rawProfileImg !== 'default') ? rawProfileImg : null;
   res.locals.user = req.session?.user || null;
   res.locals.isLogin = !!req.session?.user;
-  res.locals.isSuperAdmin = req.session?.user?.role === 'SuperAdmin';
+  res.locals.issuperadmin = req.session?.user?.role === 'superadmin';
   next();
 });
 
@@ -118,7 +118,7 @@ server.use(generalLimiter);
 server.use(blogRouter);
 
 // Dashboard routes (stricter limiter + role check)
-server.use('/dashboard', dashboardLimiter, validateSessionAndRole('SuperAdmin'), dashboardRouter);
+server.use('/dashboard', dashboardLimiter, validateSessionAndRole('superadmin'), dashboardRouter);
 
 server.use(mbkbucket);
 

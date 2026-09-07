@@ -1,27 +1,31 @@
-// Setup file for Jest tests
-import { jest } from '@jest/globals';
+/**
+ * Global test setup for blogmbktech — runs before every test file.
+ */
+import { vi } from "vitest";
 
-// Create mockable objects with jest.fn
-export const mockPoolQuery = jest.fn();
-export const mockClientRelease = jest.fn();
+// Force SQLite in-memory mode for all tests
+process.env.NODE_ENV = "test";
+process.env.DB_TYPE = "sqlite";
+process.env.SQLITE_PATH = ":memory:";
 
-// Create a mock client with a query method that can be replaced per test
-export const mockClient = {
-    query: jest.fn(),
-    release: mockClientRelease
-};
+// Test secrets
+process.env.SESSION_SECRET = "test-session-secret-blog";
+process.env.MAIN_SECRET_TOKEN = "test-main-secret-token-blog";
+process.env.GEMINI_API_KEY = "test-gemini-key";
 
-// Mock pool.connect to return the mock client
-export const mockPoolConnect = jest.fn().mockResolvedValue(mockClient);
-
-export const mockPool = {
-    query: mockPoolQuery,
-    connect: mockPoolConnect
-};
-
-jest.mock('../src/config/db.js', () => ({
-    pool: {
-        query: mockPoolQuery,
-        connect: mockPoolConnect
-    }
-}));
+// Mock validateSessionAndRole for route tests
+vi.mock("mbkauthe", async (importOriginal) => {
+  const actual = await importOriginal();
+  return {
+    ...actual,
+    validateSessionAndRole: (role = "Any") => (req, res, next) => {
+      if (!req.session?.user) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+      if (role && role !== "Any" && req.session.user.role !== role && req.session.user.role !== "superadmin") {
+        return res.status(403).json({ message: "Forbidden" });
+      }
+      next();
+    },
+  };
+});

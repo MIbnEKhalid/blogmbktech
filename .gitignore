@@ -139,3 +139,5 @@ package-lock.json
 
 # Disable caching for now
 public/posts/
+
+data/

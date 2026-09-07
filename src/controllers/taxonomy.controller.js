@@ -1,4 +1,4 @@
-import { pool } from '../config/db.js';
+import { taxonomyRepository } from '../repositories/index.js';
 
 /**
  * 1. Categories Management Page
@@ -6,20 +6,8 @@ import { pool } from '../config/db.js';
 export async function getCategories(req, res) {
     try {
         const [result, stats] = await Promise.all([
-            pool.query(`
-                SELECT c.*, COUNT(DISTINCT p.id) as post_count 
-                FROM Categories c 
-                LEFT JOIN Post_Categories pc ON c.id = pc.category_id
-                LEFT JOIN Posts p ON pc.post_id = p.id
-                GROUP BY c.id 
-                ORDER BY c.name
-            `),
-            pool.query(`
-                SELECT 
-                    COUNT(*) as total_categories,
-                    (SELECT COUNT(*) FROM posts) as total_posts
-                FROM categories
-            `)
+            taxonomyRepository.getCategoriesWithPostCount(),
+            taxonomyRepository.getCategoryStats()
         ]);
 
         const statsRow = stats.rows[0] || {};
@@ -45,10 +33,10 @@ export async function createCategory(req, res) {
         const { name, description } = req.body;
         if (!name?.trim()) return res.status(400).json({ success: false, error: 'Category name is required' });
 
-        const existing = await pool.query('SELECT id FROM categories WHERE LOWER(name) = LOWER($1)', [name.trim()]);
+        const existing = await taxonomyRepository.findCategoryByName(name.trim());
         if (existing.rows?.length > 0) return res.status(400).json({ success: false, error: 'Category with this name already exists' });
 
-        await pool.query('INSERT INTO categories (name, description) VALUES ($1, $2)', [name.trim(), description?.trim() || null]);
+        await taxonomyRepository.createCategory(name.trim(), description?.trim() || null);
         res.json({ success: true, message: 'Category created successfully' });
     } catch (err) {
         console.error('Error creating category:', err);
@@ -64,10 +52,10 @@ export async function updateCategory(req, res) {
         const { name, description } = req.body;
         if (!name?.trim()) return res.status(400).json({ success: false, error: 'Category name is required' });
 
-        const existing = await pool.query('SELECT id FROM categories WHERE LOWER(name) = LOWER($1) AND id != $2', [name.trim(), req.params.id]);
+        const existing = await taxonomyRepository.findCategoryByNameExcludingId(name.trim(), req.params.id);
         if (existing.rows?.length > 0) return res.status(400).json({ success: false, error: 'Category with this name already exists' });
 
-        const result = await pool.query('UPDATE categories SET name = $1, description = $2 WHERE id = $3', [name.trim(), description?.trim() || null, req.params.id]);
+        const result = await taxonomyRepository.updateCategory(req.params.id, name.trim(), description?.trim() || null);
         if (result.rowCount === 0) return res.status(404).json({ success: false, error: 'Category not found' });
 
         res.json({ success: true, message: 'Category updated successfully' });
@@ -83,7 +71,7 @@ export async function updateCategory(req, res) {
 export async function deleteCategory(req, res) {
     const { id } = req.params;
     try {
-        const postCount = await pool.query('SELECT COUNT(*) FROM Post_Categories WHERE category_id = $1', [id]);
+        const postCount = await taxonomyRepository.getCategoryPostCount(id);
         const count = parseInt(postCount.rows[0]?.count || 0);
         if (count > 0) {
             return res.status(400).json({
@@ -92,7 +80,7 @@ export async function deleteCategory(req, res) {
             });
         }
 
-        const result = await pool.query('DELETE FROM categories WHERE id = $1', [id]);
+        const result = await taxonomyRepository.deleteCategory(id);
         if (result.rowCount === 0) return res.status(404).json({ success: false, error: 'Category not found' });
         res.json({ success: true, message: 'Category deleted successfully' });
     } catch (err) {
@@ -107,21 +95,8 @@ export async function deleteCategory(req, res) {
 export async function getTags(req, res) {
     try {
         const [tags, stats] = await Promise.all([
-            pool.query(`
-                SELECT t.*, COUNT(pt.post_id) as post_count 
-                FROM Tags t 
-                LEFT JOIN Post_Tags pt ON t.id = pt.tag_id 
-                GROUP BY t.id 
-                ORDER BY t.name
-            `),
-            pool.query(`
-                SELECT 
-                    COUNT(*) as total_tags,
-                    COUNT(DISTINCT pt.post_id) as posts_with_tags,
-                    (SELECT COUNT(*) FROM posts) as total_posts
-                FROM tags t
-                LEFT JOIN post_tags pt ON t.id = pt.tag_id
-            `)
+            taxonomyRepository.getTagsWithPostCount(),
+            taxonomyRepository.getTagStats()
         ]);
 
         const statsRow = stats.rows[0] || {};
@@ -149,10 +124,10 @@ export async function createTag(req, res) {
         if (!name?.trim()) return res.status(400).json({ success: false, error: 'Tag name is required' });
 
         const normalized = name.toLowerCase().trim();
-        const existing = await pool.query('SELECT id FROM tags WHERE name = $1', [normalized]);
+        const existing = await taxonomyRepository.findTagByName(normalized);
         if (existing.rows?.length > 0) return res.status(400).json({ success: false, error: 'Tag already exists' });
 
-        await pool.query('INSERT INTO tags (name) VALUES ($1)', [normalized]);
+        await taxonomyRepository.createTag(normalized);
         res.json({ success: true, message: 'Tag created successfully' });
     } catch (err) {
         console.error('Error creating tag:', err);
@@ -169,10 +144,10 @@ export async function updateTag(req, res) {
         if (!name?.trim()) return res.status(400).json({ success: false, error: 'Tag name is required' });
 
         const normalized = name.toLowerCase().trim();
-        const existing = await pool.query('SELECT id FROM tags WHERE name = $1 AND id != $2', [normalized, req.params.id]);
+        const existing = await taxonomyRepository.findTagByNameExcludingId(normalized, req.params.id);
         if (existing.rows?.length > 0) return res.status(400).json({ success: false, error: 'Tag already exists' });
 
-        const result = await pool.query('UPDATE tags SET name = $1 WHERE id = $2', [normalized, req.params.id]);
+        const result = await taxonomyRepository.updateTag(req.params.id, normalized);
         if (result.rowCount === 0) return res.status(404).json({ success: false, error: 'Tag not found' });
 
         res.json({ success: true, message: 'Tag updated successfully' });
@@ -187,14 +162,14 @@ export async function updateTag(req, res) {
  */
 export async function deleteTag(req, res) {
     try {
-        const postCount = await pool.query('SELECT COUNT(*) FROM Post_Tags WHERE tag_id = $1', [req.params.id]);
+        const postCount = await taxonomyRepository.getTagPostCount(req.params.id);
         const count = parseInt(postCount.rows[0]?.count || 0);
 
         if (count > 0) {
-            await pool.query('DELETE FROM Post_Tags WHERE tag_id = $1', [req.params.id]);
+            await taxonomyRepository.deletePostTagsByTagId(req.params.id);
         }
 
-        const result = await pool.query('DELETE FROM tags WHERE id = $1', [req.params.id]);
+        const result = await taxonomyRepository.deleteTag(req.params.id);
         if (result.rowCount === 0) return res.status(404).json({ success: false, error: 'Tag not found' });
 
         res.json({

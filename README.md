@@ -39,7 +39,7 @@ A modern, high-performance, and SEO-optimized blogging platform and Content Mana
 - **Rate-Limited Uploads**: Strict IP-based upload limits to prevent abuse.
 
 ### 🛡️ Enterprise Security & Bot Mitigation
-- **Authentication & RBAC (`mbkauthe`)**: Multi-factor authentication (2FA) support, secure cookie sessions, and role validation (`SuperAdmin`).
+- **Authentication & RBAC (`mbkauthe`)**: Multi-factor authentication (2FA) support, secure cookie sessions, and role validation (`superadmin`).
 - **AI Crawler & Bot Defense**: Custom bot blocker middleware identifying and filtering unwanted scrapers.
 - **Multi-Tiered Rate Limiting**: Dedicated rate limits for general visitors, bots, and the admin dashboard.
 - **HTTP Security Headers**: Secure headers, CORS, and cross-origin resource policy enforcement.
@@ -181,7 +181,7 @@ blogmbktech/
 
 - **MIME & Magic-Number Verification**: Every uploaded file is checked at byte-level before upload to cloud storage to prevent executable upload exploits.
 - **Session & 2FA Protection**: Powered by `mbkauthe` with secure cookie options (`SameSite`, `HttpOnly`, `Secure`).
-- **Role-Based Authorization**: Dashboard routes are guarded by `validateSessionAndRole('SuperAdmin')`.
+- **Role-Based Authorization**: Dashboard routes are guarded by `validateSessionAndRole('superadmin')`.
 - **Anti-Scraper Filtering**: Bot blocker middleware monitors headers and applies strict rate-limits to abusive crawlers.
 - **XSS Prevention**: Markdown content is sanitized through `DOMPurify` with a headless DOM before being rendered or stored.
 

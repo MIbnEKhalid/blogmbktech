@@ -1,4 +1,4 @@
-import { pool } from '../config/db.js';
+import { commentRepository } from '../repositories/index.js';
 
 /**
  * 1. Comments Moderation Page
@@ -6,19 +6,8 @@ import { pool } from '../config/db.js';
 export async function getCommentsList(req, res) {
     try {
         const [comments, stats] = await Promise.all([
-            pool.query(`
-                SELECT c.*, p.title as post_title, p.slug as post_slug 
-                FROM comments c 
-                LEFT JOIN posts p ON c.post_id = p.id 
-                ORDER BY c.created_at DESC
-            `),
-            pool.query(`
-                SELECT 
-                    COUNT(*) as total_comments,
-                    COUNT(CASE WHEN is_approved = true THEN 1 END) as approved_comments,
-                    COUNT(CASE WHEN is_approved = false THEN 1 END) as pending_comments
-                FROM comments
-            `)
+            commentRepository.getCommentsList(),
+            commentRepository.getCommentStats()
         ]);
 
         const statsRow = stats.rows[0] || {};
@@ -48,7 +37,7 @@ export async function moderateComment(req, res) {
         return res.status(400).json({ success: false, error: 'Invalid action' });
     }
     try {
-        const result = await pool.query('UPDATE comments SET is_approved = $1 WHERE id = $2', [action === 'approve', id]);
+        const result = await commentRepository.moderateComment(id, action === 'approve');
         if (result.rowCount === 0) return res.status(404).json({ success: false, error: 'Comment not found' });
         res.json({ success: true, message: `Comment ${action === 'approve' ? 'approved' : 'unapproved'} successfully` });
     } catch (err) {
@@ -68,12 +57,14 @@ export async function replyComment(req, res) {
             return res.status(400).json({ success: false, message: 'Reply content cannot be empty' });
         }
 
-        const parent = await pool.query('SELECT post_id FROM Comments WHERE id = $1', [id]);
+        const parent = await commentRepository.findParentComment(id);
         if (!parent.rows[0]) return res.status(404).json({ success: false, message: 'Parent comment not found' });
 
-        const result = await pool.query(
-            'INSERT INTO Comments (content, "UserName", post_id, parent_id, is_approved, created_at) VALUES ($1, $2, $3, $4, true, NOW()) RETURNING id',
-            [content.trim(), req.session?.user?.username || 'admin', parent.rows[0].post_id, parseInt(id)]
+        const result = await commentRepository.replyComment(
+            content.trim(),
+            req.session?.user?.username || 'admin',
+            parent.rows[0].post_id,
+            parseInt(id, 10)
         );
 
         res.json({ success: true, message: 'Reply posted successfully', id: result.rows?.[0]?.id || 1 });
@@ -93,9 +84,9 @@ export async function bulkCommentsAction(req, res) {
     }
     const ids = commentIds.map(id => parseInt(id, 10)).filter(id => !isNaN(id));
     try {
-        if (action === 'approve') await pool.query('UPDATE Comments SET is_approved = true WHERE id = ANY($1)', [ids]);
-        else if (action === 'unapprove') await pool.query('UPDATE Comments SET is_approved = false WHERE id = ANY($1)', [ids]);
-        else if (action === 'delete') await pool.query('DELETE FROM Comments WHERE id = ANY($1)', [ids]);
+        if (action === 'approve') await commentRepository.bulkApprove(ids);
+        else if (action === 'unapprove') await commentRepository.bulkUnapprove(ids);
+        else if (action === 'delete') await commentRepository.bulkDelete(ids);
         else return res.status(400).json({ success: false, message: 'Invalid action' });
 
         res.json({ success: true, message: `Successfully processed ${ids.length} comments` });
@@ -110,7 +101,7 @@ export async function bulkCommentsAction(req, res) {
  */
 export async function deleteComment(req, res) {
     try {
-        const result = await pool.query('DELETE FROM comments WHERE id = $1', [req.params.id]);
+        const result = await commentRepository.deleteComment(req.params.id);
         if (result.rowCount === 0) return res.status(404).json({ success: false, error: 'Comment not found' });
         res.json({ success: true, message: 'Comment deleted successfully' });
     } catch (err) {

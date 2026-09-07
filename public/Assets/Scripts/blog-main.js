@@ -12,7 +12,7 @@ window.getCookie = getCookie;
 
 // User Profile Picture Hydration from Cookie (For Logged-in User in Navbar & Current User Badge)
 function hydrateUserAvatars() {
-    const cookiePp = getCookie('profileImageUrl');
+    const cookiePp = getCookie('profile_image_url');
     if (!cookiePp || cookiePp === 'default') return;
 
     // Update ONLY navbar avatar and current user badge elements

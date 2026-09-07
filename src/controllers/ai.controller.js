@@ -1,4 +1,4 @@
-import { pool } from '../config/db.js';
+import { taxonomyRepository } from '../repositories/index.js';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
@@ -18,7 +18,7 @@ export async function aiAssist(req, res) {
             systemInstruction = 'You are an SEO specialist. Return EXACTLY 5–8 comma-separated tags. Lowercase only. No hashtags. No explanations.';
             userPrompt = `Content:\n${context.content?.substring(0, 3000) || ''}`;
         } else if (action === 'categories') {
-            const cats = await pool.query('SELECT id, name FROM Categories');
+            const cats = await taxonomyRepository.getAllCategories();
             isJsonMode = true;
             systemInstruction = 'You are a content classifier. Return JSON ONLY in this format: { "categoryIds": [number] }. Do not include explanations.';
             userPrompt = `Categories: ${JSON.stringify(cats.rows || [])}\nContent: ${context.content?.substring(0, 1500) || ''}`;

@@ -1,6 +1,6 @@
 {
   "name": "mbkblog",
-  "version": "2.0.1",
+  "version": "2.1.0",
   "main": "src/server.js",
   "type": "module",
   "scripts": {
@@ -8,13 +8,15 @@
     "dev": "nodemon src/server.js",
     "generate-sitemap": "node src/scripts/generate-sitemap.js",
     "generate-posts": "node src/scripts/generate-posts.js",
-    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js",
-    "test:watch": "node --experimental-vm-modules node_modules/jest/bin/jest.js --watch"
+    "init-sqlite": "node src/scripts/init-sqlite.js",
+    "schema:sqlite": "node src/scripts/init-sqlite.js",
+    "test": "vitest run"
   },
   "author": "Muhammad Bin Khalid",
   "license": "MIT",
   "dependencies": {
     "@google/generative-ai": "^0.24.1",
+    "better-sqlite3": "^11.9.1",
     "compression": "^1.8.0",
     "cookie-parser": "^1.4.7",
     "dompurify": "^3.3.0",
@@ -25,16 +27,15 @@
     "jsdom": "^26.1.0",
     "marked": "^16.3.0",
     "mbkauthe": "latest",
-    "mbkbucket": "^3.3.2",
+    "mbkbucket": "latest",
     "pg": "^8.16.3",
     "prismjs": "^1.30.0"
   },
   "devDependencies": {
-    "@babel/preset-env": "^7.28.5",
-    "express-session": "^1.18.1",
-    "jest": "^30.2.0",
+    "@types/supertest": "^7.2.1",
     "nodemon": "^3.1.14",
-    "supertest": "^7.1.4"
+    "supertest": "^7.1.4",
+    "vitest": "^4.1.11"
   },
   "overrides": {
     "csurf": {
