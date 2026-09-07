@@ -139,4 +139,5 @@ dist
 # Disable caching for now
 public/posts/
 
-data/
+data/
+package-lock.json
