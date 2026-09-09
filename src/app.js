@@ -13,7 +13,16 @@ import { securityHeadersMiddleware, botBlockerMiddleware } from './middleware/bo
 import { botLimiter, generalLimiter, dashboardLimiter } from './middleware/rate-limiter.js';
 import { notFoundHandler, errorHandler } from './middleware/error-handler.js';
 import { handlebarsHelpers } from './utils/handlebars-helpers.js';
-import { blogRouter, dashboardRouter } from './routes/index.js';
+import {
+  blogRouter,
+  dashboardRouter,
+  postsRouter,
+  commentsRouter,
+  categoriesRouter,
+  tagsRouter,
+  mediaRouter,
+  aiRouter,
+} from './routes/index.js';
 
 import mbkbucket from "mbkbucket";
 
@@ -117,8 +126,21 @@ server.use(generalLimiter);
 // Blog routes
 server.use(blogRouter);
 
-// Dashboard routes (stricter limiter + role check)
-server.use('/dashboard', dashboardLimiter, validateSessionAndRole('superadmin'), dashboardRouter);
+// Dashboard feature routes (stricter limiter + role check). Each route file
+// represents one feature/resource (posts, comments, categories, tags, media,
+// ai) and can later carry its own permission.
+server.use(
+  '/dashboard',
+  dashboardLimiter,
+  validateSessionAndRole('superadmin'),
+  dashboardRouter,
+  postsRouter,
+  commentsRouter,
+  categoriesRouter,
+  tagsRouter,
+  mediaRouter,
+  aiRouter
+);
 
 server.use(mbkbucket);
 
