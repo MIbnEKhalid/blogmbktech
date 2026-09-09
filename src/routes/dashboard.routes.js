@@ -1,5 +1,5 @@
 import express from 'express';
-import { uploadRateLimiter } from '../middlewares/rateLimiter.middleware.js';
+import { uploadRateLimiter } from '../middleware/rateLimiter.js';
 import { dashboardController, postsController, commentsController, taxonomyController, mediaController, aiController } from '../controllers/index.js';
 
 const router = express.Router();

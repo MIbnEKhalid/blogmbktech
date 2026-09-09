@@ -147,7 +147,7 @@ blogmbktech/
 │   │   ├── media.controller.js     # Media library & file uploads
 │   │   ├── posts.controller.js     # Post CRUD & publishing
 │   │   └── taxonomy.controller.js  # Categories & tags management
-│   ├── middlewares/                # Custom Express middlewares
+│   ├── middleware/                 # Custom Express middlewares
 │   │   ├── botBlocker.middleware.js # Scraper & bot detection
 │   │   ├── errorHandler.middleware.js # Global 404 and 500 handlers
 │   │   ├── logging.middleware.js   # Request timing & logging

@@ -8,10 +8,10 @@ import compression from 'compression';
 import cookieParser from 'cookie-parser';
 
 import { VIEWS_DIR, PUBLIC_DIR } from './config/constants.js';
-import { loggingMiddleware } from './middlewares/logging.middleware.js';
-import { securityHeadersMiddleware, botBlockerMiddleware } from './middlewares/botBlocker.middleware.js';
-import { botLimiter, generalLimiter, dashboardLimiter } from './middlewares/rateLimiter.middleware.js';
-import { notFoundHandler, errorHandler } from './middlewares/errorHandler.middleware.js';
+import { loggingMiddleware } from './middleware/logging.js';
+import { securityHeadersMiddleware, botBlockerMiddleware } from './middleware/botBlocker.js';
+import { botLimiter, generalLimiter, dashboardLimiter } from './middleware/rateLimiter.js';
+import { notFoundHandler, errorHandler } from './middleware/errorHandler.js';
 import { handlebarsHelpers } from './utils/handlebarsHelpers.js';
 import { blogRouter, dashboardRouter } from './routes/index.js';
 
