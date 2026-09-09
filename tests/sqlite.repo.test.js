@@ -10,7 +10,7 @@ import { ActivityLogRepository } from '../src/repositories/ActivityLogRepository
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-const SCHEMA_PATH = path.resolve(__dirname, '../src/db/schema/schema.sqlite.sql');
+const SCHEMA_PATH = path.resolve(__dirname, '../src/db/schema/sqlite.sql');
 
 describe('Dual DB Architecture: SQLite Repository Integration', () => {
   let adapter;

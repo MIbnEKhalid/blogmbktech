@@ -1,15 +1,15 @@
 {
   "name": "mbkblog",
-  "version": "2.1.0",
+  "version": "2.1.1",
   "main": "src/server.js",
   "type": "module",
   "scripts": {
     "start": "node src/server.js",
     "dev": "nodemon src/server.js",
-    "generate-sitemap": "node src/scripts/generate-sitemap.js",
-    "generate-posts": "node src/scripts/generate-posts.js",
-    "init-sqlite": "node src/scripts/init-sqlite.js",
-    "schema:sqlite": "node src/scripts/init-sqlite.js",
+    "generate-sitemap": "node scripts/generate-sitemap.js",
+    "generate-posts": "node scripts/generate-posts.js",
+    "db:init:postgres": "node scripts/initDb.js --type=postgres",
+    "db:init:sqlite": "node scripts/initDb.js --type=sqlite",
     "test": "vitest run"
   },
   "author": "Muhammad Bin Khalid",
