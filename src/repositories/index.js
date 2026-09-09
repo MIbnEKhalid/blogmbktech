@@ -1,4 +1,4 @@
-export { TaxonomyRepository, taxonomyRepository } from './TaxonomyRepository.js';
-export { PostRepository, postRepository } from './PostRepository.js';
-export { CommentRepository, commentRepository } from './CommentRepository.js';
-export { ActivityLogRepository, activityLogRepository } from './ActivityLogRepository.js';
+export { TaxonomyRepository, taxonomyRepository } from './taxonomy.repository.js';
+export { PostRepository, postRepository } from './post.repository.js';
+export { CommentRepository, commentRepository } from './comment.repository.js';
+export { ActivityLogRepository, activityLogRepository } from './activity-log.repository.js';

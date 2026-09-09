@@ -1,6 +1,6 @@
 {{#section 'styles'}}
-<link rel="stylesheet" href="/Assets/blog-archive.css?v={{cacheBuster}}">
-<script src="/Assets/Scripts/bookmarks.js?v={{cacheBuster}}" defer></script>
+<link rel="stylesheet" href="/assets/css/blog-archive.css?v={{cacheBuster}}">
+<script src="/assets/js/bookmarks.js?v={{cacheBuster}}" defer></script>
 <title>My Bookmarks - MBK Tech Blog</title>
 <meta name="description" content="View and manage all your bookmarked blog posts">
 <meta name="robots" content="noindex, nofollow">
@@ -40,7 +40,7 @@
     {{#if posts.length}}
     <div class="posts-grid">
         {{#each posts}}
-        {{> partial/postCard isBookmarksPage=true}}
+        {{> partials/postCard isBookmarksPage=true}}
         {{/each}}
     </div>
     {{else}}

@@ -9,10 +9,10 @@ import cookieParser from 'cookie-parser';
 
 import { VIEWS_DIR, PUBLIC_DIR } from './config/constants.js';
 import { loggingMiddleware } from './middleware/logging.js';
-import { securityHeadersMiddleware, botBlockerMiddleware } from './middleware/botBlocker.js';
-import { botLimiter, generalLimiter, dashboardLimiter } from './middleware/rateLimiter.js';
-import { notFoundHandler, errorHandler } from './middleware/errorHandler.js';
-import { handlebarsHelpers } from './utils/handlebarsHelpers.js';
+import { securityHeadersMiddleware, botBlockerMiddleware } from './middleware/bot-blocker.js';
+import { botLimiter, generalLimiter, dashboardLimiter } from './middleware/rate-limiter.js';
+import { notFoundHandler, errorHandler } from './middleware/error-handler.js';
+import { handlebarsHelpers } from './utils/handlebars-helpers.js';
 import { blogRouter, dashboardRouter } from './routes/index.js';
 
 import mbkbucket from "mbkbucket";
@@ -38,7 +38,7 @@ server.use(botBlockerMiddleware);
 server.use(botLimiter);
 
 // Serve static assets
-server.use('/Assets', express.static(path.join(PUBLIC_DIR, 'Assets'), {
+server.use('/assets', express.static(path.join(PUBLIC_DIR, 'assets'), {
   maxAge: '7d',
   setHeaders: (res, filePath) => {
     if (filePath.endsWith('.css')) {
@@ -95,7 +95,7 @@ server.engine('handlebars', engine({
     path.join(VIEWS_DIR, 'templates'),
     path.join(VIEWS_DIR, 'templates/notice'),
     VIEWS_DIR,
-    path.join(VIEWS_DIR, 'partial'),
+    path.join(VIEWS_DIR, 'partials'),
     path.join(process.cwd(), 'node_modules/mbkauthe/views'),
     path.join(process.cwd(), 'node_modules/mbkbucket/views'),
   ],

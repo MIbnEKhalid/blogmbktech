@@ -2,7 +2,7 @@ import { describe, test, expect, beforeAll, afterAll } from "vitest";
 import request from "supertest";
 import { createTestApp } from "../../helpers/createTestApp.js";
 import { createTestDb, cleanupTestDb } from "../../helpers/createTestDb.js";
-import { TaxonomyRepository } from "../../../src/repositories/TaxonomyRepository.js";
+import { TaxonomyRepository } from "../../../src/repositories/taxonomy.repository.js";
 
 describe("Dashboard Route Integration Tests", () => {
   let app;

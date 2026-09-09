@@ -3,7 +3,7 @@ import Prism from 'prismjs';
 import crypto from 'crypto';
 import fs from 'fs';
 import { uploadFile, listfiles } from 'mbkbucket';
-import { validateFileSignature, generateSecureFilename } from '../utils/fileValidation.js';
+import { validateFileSignature, generateSecureFilename } from '../utils/file-validation.js';
 
 marked.setOptions({
     highlight: (code, lang) => Prism.languages[lang] ? Prism.highlight(code, Prism.languages[lang], lang) : code,

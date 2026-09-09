@@ -2,8 +2,8 @@ import { describe, test, expect, beforeAll, afterAll } from "vitest";
 import request from "supertest";
 import app from "../../../src/app.js";
 import { createTestDb, cleanupTestDb } from "../../helpers/createTestDb.js";
-import { PostRepository } from "../../../src/repositories/PostRepository.js";
-import { TaxonomyRepository } from "../../../src/repositories/TaxonomyRepository.js";
+import { PostRepository } from "../../../src/repositories/post.repository.js";
+import { TaxonomyRepository } from "../../../src/repositories/taxonomy.repository.js";
 
 describe("Public Blog Route Integration Tests", () => {
   let adapter;

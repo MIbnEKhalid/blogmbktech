@@ -1,5 +1,5 @@
 import { postRepository, taxonomyRepository } from '../repositories/index.js';
-import { logActivity } from '../utils/activityLogger.js';
+import { logActivity } from '../utils/activity-logger.js';
 
 /**
  * 1. Posts List Page

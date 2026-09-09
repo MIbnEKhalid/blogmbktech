@@ -1,5 +1,5 @@
 {{#if (eq pageType "posts")}}
-{{> partial/archiveMetaData}}
+{{> partials/archiveMetaData}}
 
 <div class="section-container">
     <div class="section-header">
@@ -20,16 +20,16 @@
     </div>
 
     {{#if posts.length}}
-    {{> partial/searchAndFilter hideAuthorFilter=username hideCategoryFilter=category}}
+    {{> partials/searchAndFilter hideAuthorFilter=username hideCategoryFilter=category}}
 
     <div class="posts-grid" id="postsGrid">
         {{#each posts}}
-        {{> partial/postCard}}
+        {{> partials/postCard}}
         {{/each}}
     </div>
 
-    {{> partial/pagination}}
-    {{> partial/searchAndFilterScript}}
+    {{> partials/pagination}}
+    {{> partials/searchAndFilterScript}}
     {{else}}
     <div class="empty-state">
         <h2>No posts found</h2>
@@ -46,7 +46,7 @@
 </div>
 
 {{else if (eq pageType "categories")}}
-{{> partial/categoriesMetaData}}
+{{> partials/categoriesMetaData}}
 
 <div class="section-container">
     <div class="section-header">
@@ -78,7 +78,7 @@
 </div>
 
 {{else if (eq pageType "tags")}}
-{{> partial/tagsMetaData}}
+{{> partials/tagsMetaData}}
 <div class="section-container">
     <div class="section-header">
         <h1>Tags Cloud</h1>

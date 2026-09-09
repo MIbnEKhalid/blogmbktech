@@ -1,15 +1,15 @@
-{{> partial/homeMetaData}}
+{{> partials/homeMetaData}}
 <div class="section-container">
-    {{> partial/searchAndFilter}}
+    {{> partials/searchAndFilter}}
 
     {{#if posts.length}}
     <div class="posts-grid" id="postsGrid">
         {{#each posts}}
-        {{> partial/postCard}}
+        {{> partials/postCard}}
         {{/each}}
     </div>
 
-    {{> partial/pagination}}
+    {{> partials/pagination}}
     {{else}}
     <div class="empty-state">
         <h2>No posts found</h2>
@@ -23,4 +23,4 @@
     {{/if}}
 </div>
 
-{{> partial/searchAndFilterScript}}
+{{> partials/searchAndFilterScript}}

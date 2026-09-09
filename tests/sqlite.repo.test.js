@@ -3,10 +3,10 @@ import { fileURLToPath } from 'url';
 import { describe, test, expect, beforeAll, afterAll } from 'vitest';
 import { SqliteAdapter, sqliteDialect, applySchema, closeAllConnections } from 'mbkauthe';
 
-import { PostRepository } from '../src/repositories/PostRepository.js';
-import { TaxonomyRepository } from '../src/repositories/TaxonomyRepository.js';
-import { CommentRepository } from '../src/repositories/CommentRepository.js';
-import { ActivityLogRepository } from '../src/repositories/ActivityLogRepository.js';
+import { PostRepository } from '../src/repositories/post.repository.js';
+import { TaxonomyRepository } from '../src/repositories/taxonomy.repository.js';
+import { CommentRepository } from '../src/repositories/comment.repository.js';
+import { ActivityLogRepository } from '../src/repositories/activity-log.repository.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);

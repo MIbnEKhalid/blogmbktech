@@ -1,7 +1,7 @@
 import express from "express";
 import { engine } from "express-handlebars";
 import { dashboardRouter, blogRouter } from "../../src/routes/index.js";
-import { handlebarsHelpers } from "../../src/utils/handlebarsHelpers.js";
+import { handlebarsHelpers } from "../../src/utils/handlebars-helpers.js";
 import { VIEWS_DIR } from "../../src/config/constants.js";
 
 /**
