@@ -1,6 +1,6 @@
 import express from 'express';
 import rateLimit from 'express-rate-limit';
-import { validateSessionAndRole } from 'mbkauthe';
+import { sessVal } from 'mbkauthe';
 import { blogController } from '../controllers/index.js';
 
 const router = express.Router();
@@ -35,7 +35,7 @@ router.get('/tag/:tagName', blogController.getPostsByTag);
 router.get('/post/:slug', blogController.getPostBySlug);
 
 // 8. Add Comment
-router.post('/post/:slug/comment', validateSessionAndRole('any'), blogController.createComment);
+router.post('/post/:slug/comment', sessVal, blogController.createComment);
 
 // 9. Bookmarks
 router.get('/bookmarks', blogController.getBookmarks);

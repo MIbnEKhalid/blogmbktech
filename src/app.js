@@ -2,7 +2,6 @@ import express from 'express';
 import path from 'path';
 import dotenv from 'dotenv';
 import mbkauthe from 'mbkauthe';
-import { validateSessionAndRole } from 'mbkauthe';
 import { engine } from 'express-handlebars';
 import compression from 'compression';
 import cookieParser from 'cookie-parser';
@@ -13,16 +12,7 @@ import { securityHeadersMiddleware, botBlockerMiddleware } from './middleware/bo
 import { botLimiter, generalLimiter, dashboardLimiter } from './middleware/rate-limiter.js';
 import { notFoundHandler, errorHandler } from './middleware/error-handler.js';
 import { handlebarsHelpers } from './utils/handlebars-helpers.js';
-import {
-  blogRouter,
-  dashboardRouter,
-  postsRouter,
-  commentsRouter,
-  categoriesRouter,
-  tagsRouter,
-  mediaRouter,
-  aiRouter,
-} from './routes/index.js';
+import { blogRouter, dashboardRouter, postsRouter, commentsRouter, categoriesRouter, tagsRouter, mediaRouter, aiRouter } from './routes/index.js';
 
 import mbkbucket from "mbkbucket";
 
@@ -126,21 +116,9 @@ server.use(generalLimiter);
 // Blog routes
 server.use(blogRouter);
 
-// Dashboard feature routes (stricter limiter + role check). Each route file
-// represents one feature/resource (posts, comments, categories, tags, media,
-// ai) and can later carry its own permission.
-server.use(
-  '/dashboard',
-  dashboardLimiter,
-  validateSessionAndRole('superadmin'),
-  dashboardRouter,
-  postsRouter,
-  commentsRouter,
-  categoriesRouter,
-  tagsRouter,
-  mediaRouter,
-  aiRouter
-);
+// Dashboard feature routes (stricter limiter; each route file carries its own
+// sessPerm guard, so access is permission-based rather than role-based).
+server.use( '/dashboard', dashboardLimiter, dashboardRouter, postsRouter, commentsRouter, categoriesRouter, tagsRouter, mediaRouter, aiRouter);
 
 server.use(mbkbucket);
 

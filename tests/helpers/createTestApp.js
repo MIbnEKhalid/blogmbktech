@@ -1,15 +1,6 @@
 import express from "express";
 import { engine } from "express-handlebars";
-import {
-  dashboardRouter,
-  blogRouter,
-  postsRouter,
-  commentsRouter,
-  categoriesRouter,
-  tagsRouter,
-  mediaRouter,
-  aiRouter,
-} from "../../src/routes/index.js";
+import { dashboardRouter, blogRouter, postsRouter, commentsRouter, categoriesRouter, tagsRouter, mediaRouter, aiRouter } from "../../src/routes/index.js";
 import { handlebarsHelpers } from "../../src/utils/handlebars-helpers.js";
 import { VIEWS_DIR } from "../../src/config/constants.js";
 
@@ -43,16 +34,7 @@ export function createTestApp({ user = { username: "admin", role: "superadmin" }
     next();
   });
 
-  app.use(
-    "/dashboard",
-    dashboardRouter,
-    postsRouter,
-    commentsRouter,
-    categoriesRouter,
-    tagsRouter,
-    mediaRouter,
-    aiRouter
-  );
+  app.use( "/dashboard", dashboardRouter, postsRouter, commentsRouter, categoriesRouter, tagsRouter, mediaRouter, aiRouter);
   app.use("/", blogRouter);
 
   return app;

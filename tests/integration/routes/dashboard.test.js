@@ -47,4 +47,33 @@ describe("Dashboard Route Integration Tests", () => {
       expect(found.rows.length).toBeGreaterThanOrEqual(1);
     });
   });
+
+  describe("Granular permission enforcement (sessPerm)", () => {
+    const noPermUser = {
+      username: "editor",
+      role: "editor",
+      permissions: { allows: ["blog:posts:edit"], denies: [] },
+    };
+    const grantedUser = {
+      username: "editor2",
+      role: "editor",
+      permissions: { allows: ["blog:taxonomy:create"], denies: [] },
+    };
+
+    test("denies an editor without blog:taxonomy:create", async () => {
+      const res = await request(app)
+        .post("/dashboard/api/categories")
+        .set("x-test-user", JSON.stringify(noPermUser))
+        .send({ name: "Blocked Category" });
+      expect(res.status).toBe(403);
+    });
+
+    test("allows an editor granted blog:taxonomy:create", async () => {
+      const res = await request(app)
+        .post("/dashboard/api/categories")
+        .set("x-test-user", JSON.stringify(grantedUser))
+        .send({ name: "Allowed Category" });
+      expect([200, 201]).toContain(res.status);
+    });
+  });
 });
