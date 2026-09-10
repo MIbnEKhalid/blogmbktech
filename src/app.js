@@ -1,7 +1,7 @@
 import express from 'express';
 import path from 'path';
 import dotenv from 'dotenv';
-import mbkauthe from 'mbkauthe';
+import mbkauthe, { sessPerm } from 'mbkauthe';
 import { engine } from 'express-handlebars';
 import compression from 'compression';
 import cookieParser from 'cookie-parser';
@@ -14,7 +14,8 @@ import { notFoundHandler, errorHandler } from './middleware/error-handler.js';
 import { handlebarsHelpers } from './utils/handlebars-helpers.js';
 import { blogRouter, dashboardRouter, postsRouter, commentsRouter, categoriesRouter, tagsRouter, mediaRouter, aiRouter } from './routes/index.js';
 
-import mbkbucket from "mbkbucket";
+import { createBucketRouter } from "mbkbucket";
+import { Permissions } from './permissions.js';
 
 dotenv.config();
 
@@ -120,7 +121,13 @@ server.use(blogRouter);
 // sessPerm guard, so access is permission-based rather than role-based).
 server.use( '/dashboard', dashboardLimiter, dashboardRouter, postsRouter, commentsRouter, categoriesRouter, tagsRouter, mediaRouter, aiRouter);
 
-server.use(mbkbucket);
+server.use(createBucketRouter({
+  authorization: {
+    view: sessPerm(Permissions.storage.view),
+    upload: sessPerm(Permissions.storage.upload),
+    delete: sessPerm(Permissions.storage.delete),
+  },
+}));
 
 // 404 handler
 server.use(notFoundHandler);
