@@ -29,6 +29,7 @@
     "marked": "^16.3.0",
     "mbkauthe": "latest",
     "mbkbucket": "latest",
+    "mbkhealth": "latest",
     "pg": "^8.16.3",
     "prismjs": "^1.30.0"
   },

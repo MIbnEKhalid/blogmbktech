@@ -38,7 +38,7 @@ server.use(botBlockerMiddleware);
 server.use(botLimiter);
 
 // Serve static assets
-server.use('/assets', express.static(path.join(PUBLIC_DIR, 'assets'), {
+server.use(['/assets', '/Assets'], express.static(path.join(PUBLIC_DIR, 'assets'), {
   maxAge: '7d',
   setHeaders: (res, filePath) => {
     if (filePath.endsWith('.css')) {
@@ -113,6 +113,15 @@ server.set('views', [
 
 // Apply general limiter to application routes (after static assets)
 server.use(generalLimiter);
+
+import { createHealthRouter } from "mbkhealth";
+
+// Health check & test endpoints
+server.use("/api/health", createHealthRouter({
+  appName: "blogmbktech",
+  app: server,
+}));
+server.get("/health", (req, res) => res.redirect("/api/health"));
 
 // Blog routes
 server.use(blogRouter);

@@ -79,5 +79,19 @@ describe("Public Blog Route Integration Tests", () => {
       expect(res.body.error).toBeDefined();
       expect(res.body.error.code).toBe("ROUTE_NOT_FOUND");
     });
+
+    test("GET /api/health returns standardized healthy status", async () => {
+      const res = await request(app).get("/api/health");
+      expect(res.status).toBe(200);
+      expect(res.body.success).toBe(true);
+      expect(res.body.status).toBe("healthy");
+      expect(res.body.app).toBe("blogmbktech");
+    });
+
+    test("POST /api/health/test rejects unauthorized request", async () => {
+      const res = await request(app).post("/api/health/test");
+      expect(res.status).toBe(401);
+      expect(res.body.success).toBe(false);
+    });
   });
 });
