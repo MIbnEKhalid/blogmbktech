@@ -56,16 +56,40 @@ const MANIFEST = {
   },
 };
 
-export const Permissions = definePermissions(MANIFEST, { fallbackAppKey: "blog" });
+const ROLES = {
+  admin: {
+    label: "Blog Administrator",
+    description: "Full blog administration excluding destructive storage deletion",
+    permissions: [
+      "posts:*", "comments:*", "taxonomy:*", "media:*", "ai:*", "dashboard:*", "storage:view", "storage:upload"
+    ],
+  },
+  author: {
+    label: "Blog Author",
+    description: "Create and edit own posts, upload media and view taxonomy",
+    permissions: [
+      "posts:view", "posts:create", "posts:edit", "comments:view", "taxonomy:view", "media:*", "ai:use", "dashboard:view"
+    ],
+  },
+  normaluser: {
+    label: "Blog Reader",
+    description: "View published posts and comments",
+    permissions: [
+      "posts:view", "comments:view", "taxonomy:view"
+    ],
+  },
+};
+
+export const Permissions = definePermissions(MANIFEST, { fallbackAppKey: "blog", roles: ROLES });
 
 /**
- * Register this app's permissions in the catalog (idempotent, best-effort).
+ * Register this app's permissions & roles in the catalog (idempotent, best-effort).
  * Never throws so a startup catalog hiccup cannot take the server down.
  */
 export async function syncBlogPermissions() {
   try {
     const result = await syncAppPermissions(Permissions, { fallbackAppKey: "blog" });
-    console.log(`[blogmbktech] Permission catalog synced (${result.synced} permissions)`);
+    console.log(`[blogmbktech] Permissions & roles synced (${result.synced} permissions, ${result.rolesSynced} roles)`);
     return result;
   } catch (err) {
     console.warn("[blogmbktech] Permission catalog sync skipped:", err?.message || err);
@@ -74,3 +98,4 @@ export async function syncBlogPermissions() {
 }
 
 export default Permissions;
+

@@ -3,7 +3,7 @@ import path from "node:path";
 import fs from "node:fs";
 import { fileURLToPath } from "node:url";
 import dotenv from "dotenv";
-import { registerGracefulShutdown } from "mbkauthe";
+import { registerGracefulShutdown, wrapPoolWithRetry } from "mbkauthe";
 
 const { Pool } = pkg;
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -24,8 +24,8 @@ if (dbType === "sqlite" && sqlitePath !== ":memory:") {
   }
 }
 
-const idleTimeoutMillisV = 60000; // 60 seconds
-const connectionTimeoutMillisV = 50000; // 50 seconds
+const idleTimeoutMillisV = Number(process.env.DB_IDLE_TIMEOUT_MS) || 30000;
+const connectionTimeoutMillisV = Number(process.env.DB_CONNECTION_TIMEOUT_MS) || 15000;
 
 // PostgreSQL connection pool configuration
 export const poolConfig = {
@@ -36,6 +36,9 @@ export const poolConfig = {
   max: 20,
   idleTimeoutMillis: idleTimeoutMillisV,
   connectionTimeoutMillis: connectionTimeoutMillisV,
+  keepAlive: true,
+  keepAliveInitialDelayMillis: 10000,
+  application_name: "blogmbktech-app",
 };
 
 const dummyPool = {
@@ -48,6 +51,11 @@ const dummyPool = {
 export const pool = dbType !== "sqlite" ? new Pool(poolConfig) : dummyPool;
 
 if (dbType !== "sqlite" && pool && typeof pool.on === "function") {
+  wrapPoolWithRetry(pool, {
+    name: "blogmbktech PostgreSQL",
+    maxRetries: Number(process.env.DB_MAX_RETRIES) || 3,
+  });
+
   registerGracefulShutdown(pool);
 }
 

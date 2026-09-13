@@ -1,12 +1,12 @@
 {
   "name": "mbkblog",
-  "version": "2.3.0",
+  "version": "2.3.1",
   "main": "src/server.js",
   "type": "module",
   "scripts": {
     "start": "node src/server.js",
     "dev": "nodemon src/server.js",
-    "sync-permissions": "node scripts/sync-permissions.js",
+    "sync_permissions": "node scripts/sync_permissions.js",
     "generate-sitemap": "node scripts/generate-sitemap.js",
     "generate-posts": "node scripts/generate-posts.js",
     "db:init:postgres": "node scripts/initDb.js --type=postgres",
@@ -24,11 +24,11 @@
     "dotenv": "^16.6.1",
     "express": "^5.1.0",
     "express-handlebars": "^9.0.1",
-    "express-rate-limit": "^7.5.0",
+    "express-rate-limit": "^7.5.1",
     "jsdom": "^26.1.0",
     "marked": "^16.3.0",
-    "mbkauthe": "latest",
-    "mbkbucket": "latest",
+    "mbkauthe": "file:../mbkauthe",
+    "mbkbucket": "file:../mbkbucket",
     "mbkhealth": "latest",
     "pg": "^8.16.3",
     "prismjs": "^1.30.0"
@@ -38,6 +38,9 @@
     "nodemon": "^3.1.14",
     "supertest": "^7.1.4",
     "vitest": "^4.1.11"
+  },
+  "overrides": {
+    "mbkauthe": "file:../mbkauthe"
   }
 }
 
