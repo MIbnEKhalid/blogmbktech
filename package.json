@@ -1,6 +1,6 @@
 {
   "name": "mbkblog",
-  "version": "2.3.1",
+  "version": "2.4.0",
   "main": "src/server.js",
   "type": "module",
   "scripts": {
@@ -27,9 +27,8 @@
     "express-rate-limit": "^7.5.1",
     "jsdom": "^26.1.0",
     "marked": "^16.3.0",
-    "mbkauthe": "file:../mbkauthe",
-    "mbkbucket": "file:../mbkbucket",
-    "mbkhealth": "latest",
+    "mbkauthe": "latest",
+    "mbkbucket": "latest",
     "pg": "^8.16.3",
     "prismjs": "^1.30.0"
   },
@@ -40,7 +39,7 @@
     "vitest": "^4.1.11"
   },
   "overrides": {
-    "mbkauthe": "file:../mbkauthe"
+    "mbkauthe": "latest"
   }
 }
 

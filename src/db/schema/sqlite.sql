@@ -61,22 +61,6 @@ CREATE TABLE IF NOT EXISTS mbkcore_two_factor (
 );
 CREATE INDEX IF NOT EXISTS idx_mbkcore_two_factor_username_status ON mbkcore_two_factor (username, is_enabled);
 
--- Table: mbkcore_trusted_devices
-CREATE TABLE IF NOT EXISTS mbkcore_trusted_devices (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    username VARCHAR(50) NOT NULL REFERENCES mbkcore_users(username) ON DELETE CASCADE,
-    device_token TEXT NOT NULL UNIQUE,
-    device_name TEXT,
-    user_agent TEXT,
-    ip_address TEXT,
-    created_at TEXT DEFAULT CURRENT_TIMESTAMP,
-    expires_at TEXT NOT NULL,
-    last_used TEXT DEFAULT CURRENT_TIMESTAMP
-);
-CREATE INDEX IF NOT EXISTS idx_mbkcore_trusted_devices_expires ON mbkcore_trusted_devices (expires_at);
-CREATE INDEX IF NOT EXISTS idx_mbkcore_trusted_devices_username_expires ON mbkcore_trusted_devices (username, expires_at);
-CREATE INDEX IF NOT EXISTS idx_mbkcore_trusted_devices_token_user_expires ON mbkcore_trusted_devices (device_token, username, expires_at);
-
 -- Table: mbkcore_session (express-session store)
 CREATE TABLE IF NOT EXISTS mbkcore_session (
     sid TEXT PRIMARY KEY,
