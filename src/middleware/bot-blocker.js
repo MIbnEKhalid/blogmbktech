@@ -14,11 +14,10 @@ export function securityHeadersMiddleware(req, res, next) {
  * Middleware to block known AI crawlers, bots, and suspicious clients.
  */
 export function botBlockerMiddleware(req, res, next) {
-  const userAgent = req.get('User-Agent') || '';
-  const acceptHeader = req.get('Accept') || '';
+  const userAgent = (req.get('User-Agent') || '').trim();
 
-  // Allow static asset requests (CSS/JS/images/etc.) to pass through.
-  const staticAssetPattern = /\.(css|js|svg|png|jpg|jpeg|gif|webp|xml|ico)$/i;
+  // Allow static asset requests (CSS/JS/images/fonts/etc.) to pass through.
+  const staticAssetPattern = /\.(css|js|mjs|svg|png|jpg|jpeg|gif|webp|xml|ico|woff|woff2|ttf|eot|json|map)$/i;
   if (staticAssetPattern.test(req.path)) {
     return next();
   }
@@ -31,24 +30,28 @@ export function botBlockerMiddleware(req, res, next) {
     return next();
   }
 
+  const userAgentLower = userAgent.toLowerCase();
+
   // Block known bot user agents
   const isBlocked = BLOCKED_USER_AGENTS.some(blockedAgent =>
-    userAgent.toLowerCase().includes(blockedAgent.toLowerCase())
+    userAgentLower.includes(blockedAgent.toLowerCase())
   );
 
-  // Detect suspicious patterns typical of AI crawlers
-  const suspiciousPatterns = [
-    !userAgent,                            // No user agent
-    userAgent.length < 10,                 // Too short user agent
-    !acceptHeader.includes('text/html'),   // Doesn't accept HTML
-    userAgent.includes('python'),          // Python requests
-    userAgent.includes('curl'),            // Command line tools
-    userAgent.includes('wget'),            // Download tools
-    userAgent.includes('scrapy'),          // Scraping frameworks
-    /^[a-f0-9-]{36}$/i.test(userAgent),   // UUID-like user agents
+  // Detect suspicious crawler/scraping tool patterns
+  const suspiciousTools = [
+    'python-requests',
+    'python-urllib',
+    'aiohttp',
+    'scrapy',
+    'curl/',
+    'wget/',
+    'httpie',
+    'postmanruntime',
+    'go-http-client'
   ];
 
-  const isSuspicious = suspiciousPatterns.some(pattern => pattern === true);
+  const isSuspiciousTool = suspiciousTools.some(tool => userAgentLower.includes(tool));
+  const isSuspicious = !userAgent || userAgent.length < 5 || /^[a-f0-9-]{36}$/i.test(userAgent) || isSuspiciousTool;
 
   if (isBlocked || isSuspicious) {
     console.log(`Blocked ${isSuspicious ? 'suspicious' : 'bot'} attempt: ${userAgent} from IP: ${req.ip}`);
