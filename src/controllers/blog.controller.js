@@ -411,7 +411,34 @@ export async function streamImage(req, res) {
             return res.status(400).send('Only image files are allowed');
         }
 
-        const result = await downloadFile(key);
+        let result = null;
+        const candidateKeys = [
+            key,
+            key.startsWith('blog-images/') ? key.replace(/^blog-images\//, '') : `blog-images/${key}`,
+            path.basename(key)
+        ];
+        const uniqueKeys = [...new Set(candidateKeys.filter(Boolean))];
+
+        for (const candidateKey of uniqueKeys) {
+            try {
+                result = await downloadFile(candidateKey);
+                if (result) break;
+            } catch (err) {
+                if (
+                    err.message?.includes('File not found') ||
+                    err.Code === 'NoSuchKey' ||
+                    err.name === 'NoSuchKey' ||
+                    err.$metadata?.httpStatusCode === 404
+                ) {
+                    continue;
+                }
+                throw err;
+            }
+        }
+
+        if (!result) {
+            return res.status(404).send('Image not found');
+        }
 
         res.set({
             'Content-Type': result.ContentType || 'image/jpeg',
@@ -445,7 +472,12 @@ export async function streamImage(req, res) {
             res.send(result.Body);
         }
     } catch (err) {
-        if (err.message?.includes('File not found')) {
+        if (
+            err.message?.includes('File not found') ||
+            err.Code === 'NoSuchKey' ||
+            err.name === 'NoSuchKey' ||
+            err.$metadata?.httpStatusCode === 404
+        ) {
             res.status(404).send('Image not found');
         } else if (err.message?.includes('Access denied')) {
             res.status(403).send('Access denied');

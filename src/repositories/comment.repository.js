@@ -21,11 +21,14 @@ export class CommentRepository extends BaseRepository {
   }
 
   async getCommentStats() {
+    const isSqlite = this.dialect.name === 'sqlite';
+    const approvedCond = isSqlite ? '(is_approved = 1 OR is_approved = true)' : 'is_approved = true';
+    const pendingCond = isSqlite ? '(is_approved = 0 OR is_approved = false)' : 'is_approved = false';
     return this.query(`
       SELECT 
         COUNT(*) as total_comments,
-        COUNT(CASE WHEN is_approved = true OR is_approved = 1 THEN 1 END) as approved_comments,
-        COUNT(CASE WHEN is_approved = false OR is_approved = 0 THEN 1 END) as pending_comments
+        COUNT(CASE WHEN ${approvedCond} THEN 1 END) as approved_comments,
+        COUNT(CASE WHEN ${pendingCond} THEN 1 END) as pending_comments
       FROM blog_comments
     `);
   }
