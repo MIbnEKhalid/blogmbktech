@@ -3,6 +3,7 @@ import fs from 'fs';
 import { PUBLIC_DIR } from '../config/constants.js';
 import { postRepository, commentRepository, taxonomyRepository, activityLogRepository } from '../repositories/index.js';
 import { generateAllSitemaps } from '../utils/sitemap.js';
+import { renderPage } from 'mbkauthe';
 
 /**
  * 1. Dashboard Overview (/dashboard)
@@ -19,8 +20,7 @@ export async function getOverview(req, res) {
         const postStatsRow = postStats.rows[0] || {};
         const commentStatsRow = commentStats.rows[0] || {};
 
-        res.render('dashboard/index.handlebars', {
-            layout: 'dashboard',
+        return renderPage(req, res, 'dashboard/index.hbs', 'dashboard', {
             active: 'dashboard',
             user: req.session?.user,
             stats: {
@@ -37,7 +37,8 @@ export async function getOverview(req, res) {
         });
     } catch (err) {
         console.error('Error loading dashboard overview:', err);
-        res.status(500).render('error.handlebars', { message: 'Error loading dashboard', code: 500 });
+        res.status(500);
+        return renderPage(req, res, 'error.hbs', false, { message: 'Error loading dashboard', code: 500 });
     }
 }
 
@@ -59,8 +60,7 @@ export async function getAnalytics(req, res) {
             percentage: Math.round(((p.views || 0) / (topPostViews || 1)) * 100)
         }));
 
-        res.render('dashboard/analytics.handlebars', {
-            layout: 'dashboard',
+        return renderPage(req, res, 'dashboard/analytics.hbs', 'dashboard', {
             active: 'analytics',
             user: req.session?.user,
             overview: overviewStats.rows[0] || {},
@@ -70,7 +70,8 @@ export async function getAnalytics(req, res) {
         });
     } catch (err) {
         console.error('Error loading analytics:', err);
-        res.status(500).render('error.handlebars', { message: 'Error loading analytics', code: 500 });
+        res.status(500);
+        return renderPage(req, res, 'error.hbs', false, { message: 'Error loading analytics', code: 500 });
     }
 }
 
@@ -105,8 +106,7 @@ export async function getSeoOverview(req, res) {
             exists: fs.existsSync(path.join(PUBLIC_DIR, name))
         }));
 
-        res.render('dashboard/seo.handlebars', {
-            layout: 'dashboard',
+        return renderPage(req, res, 'dashboard/seo.hbs', 'dashboard', {
             active: 'seo',
             user: req.session?.user,
             seoHealthScore,
@@ -117,7 +117,8 @@ export async function getSeoOverview(req, res) {
         });
     } catch (err) {
         console.error('Error loading SEO page:', err);
-        res.status(500).render('error.handlebars', { message: 'Error loading SEO audit', code: 500 });
+        res.status(500);
+        return renderPage(req, res, 'error.hbs', false, { message: 'Error loading SEO audit', code: 500 });
     }
 }
 
@@ -166,8 +167,7 @@ export async function getActivityLogs(req, res) {
         const total = parseInt(countRes.rows[0]?.total || 0, 10);
         const totalPages = Math.ceil(total / limit) || 1;
 
-        res.render('dashboard/activity.handlebars', {
-            layout: 'dashboard',
+        return renderPage(req, res, 'dashboard/activity.hbs', 'dashboard', {
             active: 'activity',
             user: req.session?.user,
             activities: activityRes.rows || [],
@@ -184,7 +184,8 @@ export async function getActivityLogs(req, res) {
         });
     } catch (err) {
         console.error('Error loading activity logs:', err);
-        res.status(500).render('error.handlebars', { message: 'Error loading activity log', code: 500 });
+        res.status(500);
+        return renderPage(req, res, 'error.hbs', false, { message: 'Error loading activity log', code: 500 });
     }
 }
 
@@ -201,8 +202,7 @@ export async function getSettings(req, res) {
         const settingsMap = {};
         (settingsRes.rows || []).forEach(row => { settingsMap[row.key] = row.value; });
 
-        res.render('dashboard/settings.handlebars', {
-            layout: 'dashboard',
+        return renderPage(req, res, 'dashboard/settings.hbs', 'dashboard', {
             active: 'settings',
             user: req.session?.user,
             settings: settingsMap,
@@ -218,7 +218,8 @@ export async function getSettings(req, res) {
         });
     } catch (err) {
         console.error('Error loading settings:', err);
-        res.status(500).render('error.handlebars', { message: 'Error loading settings', code: 500 });
+        res.status(500);
+        return renderPage(req, res, 'error.hbs', false, { message: 'Error loading settings', code: 500 });
     }
 }
 

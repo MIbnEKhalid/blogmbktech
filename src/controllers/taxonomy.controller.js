@@ -1,4 +1,5 @@
 import { taxonomyRepository } from '../repositories/index.js';
+import { renderPage } from 'mbkauthe';
 
 /**
  * 1. Categories Management Page
@@ -11,8 +12,7 @@ export async function getCategories(req, res) {
         ]);
 
         const statsRow = stats.rows[0] || {};
-        res.render('dashboard/categories.handlebars', {
-            layout: 'dashboard',
+        return renderPage(req, res, 'dashboard/categories.hbs', 'dashboard', {
             active: 'categories',
             categories: result.rows || [],
             stats: statsRow,
@@ -21,7 +21,8 @@ export async function getCategories(req, res) {
         });
     } catch (err) {
         console.error('Error fetching categories:', err);
-        res.status(500).render('error.handlebars', { message: 'Error fetching categories', code: 500 });
+        res.status(500);
+        return renderPage(req, res, 'error.hbs', false, { message: 'Error fetching categories', code: 500 });
     }
 }
 
@@ -100,8 +101,7 @@ export async function getTags(req, res) {
         ]);
 
         const statsRow = stats.rows[0] || {};
-        res.render('dashboard/tags.handlebars', {
-            layout: 'dashboard',
+        return renderPage(req, res, 'dashboard/tags.hbs', 'dashboard', {
             active: 'tags',
             tags: tags.rows || [],
             stats: statsRow,
@@ -111,7 +111,8 @@ export async function getTags(req, res) {
         });
     } catch (err) {
         console.error('Error fetching tags:', err);
-        res.status(500).render('error.handlebars', { message: 'Error fetching tags', code: 500 });
+        res.status(500);
+        return renderPage(req, res, 'error.hbs', false, { message: 'Error fetching tags', code: 500 });
     }
 }
 

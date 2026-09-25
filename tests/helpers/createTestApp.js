@@ -16,13 +16,14 @@ export function createTestApp({ user = { username: "admin", role: "superadmin" }
   app.use(express.urlencoded({ extended: true }));
 
   app.engine(
-    "handlebars",
+    "hbs",
     engine({
+      extname: ".hbs",
       defaultLayout: "main",
       helpers: handlebarsHelpers,
     })
   );
-  app.set("view engine", "handlebars");
+  app.set("view engine", "hbs");
   app.set("views", VIEWS_DIR);
 
   // Session injection middleware

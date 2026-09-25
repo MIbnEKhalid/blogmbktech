@@ -1,4 +1,5 @@
 import { downloadFile } from 'mbkbucket';
+import { renderPage } from 'mbkauthe';
 import fs from 'fs';
 import path from 'path';
 import { PUBLIC_DIR } from '../config/constants.js';
@@ -44,7 +45,7 @@ export async function getHome(req, res) {
         const { posts, totalPosts, totalPages } = await postRepository.fetchPostList({ whereClause, offset });
         const { uniqueAuthors, uniqueCategories } = extractUniqueMeta(posts);
 
-        res.render('blog/index.handlebars', {
+        return renderPage(req, res, 'blog/index.hbs', true, {
             posts,
             uniqueAuthors,
             uniqueCategories,
@@ -53,7 +54,8 @@ export async function getHome(req, res) {
         });
     } catch (err) {
         console.error(err);
-        res.status(500).render('error.handlebars', { message: 'Server error', code: 500 });
+        res.status(500);
+        return renderPage(req, res, 'error.hbs', false, { message: 'Server error', code: 500 });
     }
 }
 
@@ -65,14 +67,15 @@ export async function getCategoriesArchive(req, res) {
         const statusFilter = `AND p.status ${getStatusSql(req)}`;
         const result = await taxonomyRepository.getCategoriesArchive(statusFilter);
 
-        res.render('blog/archive.handlebars', {
+        return renderPage(req, res, 'blog/archive.hbs', true, {
             categories: result.rows || [],
             canonicalUrl: `${req.protocol}://${req.get('host')}/categories`,
             pageType: 'categories'
         });
     } catch (err) {
         console.error(err);
-        res.status(500).render('error.handlebars', { message: 'Server error', code: 500 });
+        res.status(500);
+        return renderPage(req, res, 'error.hbs', false, { message: 'Server error', code: 500 });
     }
 }
 
@@ -84,14 +87,15 @@ export async function getTagsArchive(req, res) {
         const statusFilter = `AND p.status ${getStatusSql(req)}`;
         const result = await taxonomyRepository.getTagsArchive(statusFilter);
 
-        res.render('blog/archive.handlebars', {
+        return renderPage(req, res, 'blog/archive.hbs', true, {
             tags: result.rows || [],
             canonicalUrl: `${req.protocol}://${req.get('host')}/tags`,
             pageType: 'tags'
         });
     } catch (err) {
         console.error(err);
-        res.status(500).render('error.handlebars', { message: 'Server error', code: 500 });
+        res.status(500);
+        return renderPage(req, res, 'error.hbs', false, { message: 'Server error', code: 500 });
     }
 }
 
@@ -108,7 +112,7 @@ export async function getPostsByAuthor(req, res) {
         const { posts, totalPosts, totalPages } = await postRepository.fetchPostList({ whereClause, params: [username], offset });
         const { uniqueCategories } = extractUniqueMeta(posts);
 
-        res.render('blog/archive.handlebars', {
+        return renderPage(req, res, 'blog/archive.hbs', true, {
             posts,
             username,
             uniqueCategories,
@@ -118,7 +122,8 @@ export async function getPostsByAuthor(req, res) {
         });
     } catch (err) {
         console.error(err);
-        res.status(500).render('error.handlebars', { message: 'Server error', code: 500 });
+        res.status(500);
+        return renderPage(req, res, 'error.hbs', false, { message: 'Server error', code: 500 });
     }
 }
 
@@ -133,7 +138,8 @@ export async function getPostsByCategory(req, res) {
 
         const category = await taxonomyRepository.getCategoryByName(categoryName);
         if (!category.rows[0]) {
-            return res.status(404).render('error.handlebars', { message: 'Category not found', code: 404 });
+            res.status(404);
+            return renderPage(req, res, 'error.hbs', false, { message: 'Category not found', code: 404 });
         }
 
         const joinClause = 'INNER JOIN blog_post_categories filter_pc ON p.id = filter_pc.post_id AND filter_pc.category_id = $1';
@@ -147,7 +153,7 @@ export async function getPostsByCategory(req, res) {
         });
         const { uniqueAuthors } = extractUniqueMeta(posts);
 
-        res.render('blog/archive.handlebars', {
+        return renderPage(req, res, 'blog/archive.hbs', true, {
             posts,
             category: category.rows[0],
             uniqueAuthors,
@@ -157,7 +163,8 @@ export async function getPostsByCategory(req, res) {
         });
     } catch (err) {
         console.error(err);
-        res.status(500).render('error.handlebars', { message: 'Server error', code: 500 });
+        res.status(500);
+        return renderPage(req, res, 'error.hbs', false, { message: 'Server error', code: 500 });
     }
 }
 
@@ -172,7 +179,8 @@ export async function getPostsByTag(req, res) {
 
         const tag = await taxonomyRepository.getTagByName(tagName);
         if (!tag.rows[0]) {
-            return res.status(404).render('error.handlebars', { message: 'Tag not found', code: 404 });
+            res.status(404);
+            return renderPage(req, res, 'error.hbs', false, { message: 'Tag not found', code: 404 });
         }
 
         const joinClause = 'INNER JOIN blog_post_tags filter_pt ON p.id = filter_pt.post_id AND filter_pt.tag_id = $1';
@@ -186,7 +194,7 @@ export async function getPostsByTag(req, res) {
         });
         const { uniqueAuthors, uniqueCategories } = extractUniqueMeta(posts);
 
-        res.render('blog/archive.handlebars', {
+        return renderPage(req, res, 'blog/archive.hbs', true, {
             posts,
             tag: tag.rows[0],
             uniqueAuthors,
@@ -197,7 +205,8 @@ export async function getPostsByTag(req, res) {
         });
     } catch (err) {
         console.error(err);
-        res.status(500).render('error.handlebars', { message: 'Server error', code: 500 });
+        res.status(500);
+        return renderPage(req, res, 'error.hbs', false, { message: 'Server error', code: 500 });
     }
 }
 
@@ -212,7 +221,7 @@ export async function getPostBySlug(req, res) {
         if (fs.existsSync(cachedDataPath)) {
             try {
                 const cachedData = JSON.parse(fs.readFileSync(cachedDataPath, 'utf-8'));
-                return res.render('blog/post.handlebars', {
+                return renderPage(req, res, 'blog/post.hbs', true, {
                     post: cachedData.post,
                     comments: cachedData.comments,
                     canonicalUrl: `${req.protocol}://${req.get('host')}/post/${slug}`,
@@ -226,7 +235,8 @@ export async function getPostBySlug(req, res) {
         const postResult = await postRepository.findBySlug(slug);
         const post = postResult.rows[0];
         if (!post) {
-            return res.status(404).render('error.handlebars', { message: 'Post not found', code: 404 });
+            res.status(404);
+            return renderPage(req, res, 'error.hbs', false, { message: 'Post not found', code: 404 });
         }
 
         const user = req.session?.user;
@@ -235,7 +245,8 @@ export async function getPostBySlug(req, res) {
         const isOwner = currentUsername && currentUsername === (post.author_name || post.username);
 
         if (post.status === 'private' && !isOwner && !isAdmin) {
-            return res.status(403).render('error.handlebars', { message: 'This post is private. Only the owner can see it.', code: 403 });
+            res.status(403);
+            return renderPage(req, res, 'error.hbs', false, { message: 'This post is private. Only the owner can see it.', code: 403 });
         }
 
         // View count debounce via cookie
@@ -293,7 +304,7 @@ export async function getPostBySlug(req, res) {
             if (comment.parent_content) comment.parent_content = purify.sanitize(comment.parent_content);
         }
 
-        res.render('blog/post.handlebars', {
+        return renderPage(req, res, 'blog/post.hbs', true, {
             post,
             comments,
             relatedPosts: relatedResult.rows || [],
@@ -302,7 +313,8 @@ export async function getPostBySlug(req, res) {
         });
     } catch (err) {
         console.error(err);
-        res.status(500).render('error.handlebars', { message: 'Server error', code: 500 });
+        res.status(500);
+        return renderPage(req, res, 'error.hbs', false, { message: 'Server error', code: 500 });
     }
 }
 
@@ -314,20 +326,23 @@ export async function createComment(req, res) {
     const { slug } = req.params;
 
     if (!content || !content.trim()) {
-        return res.status(400).render('error.handlebars', { message: 'Comment content is required', code: 400 });
+        res.status(400);
+        return renderPage(req, res, 'error.hbs', false, { message: 'Comment content is required', code: 400 });
     }
 
     try {
         const post = await postRepository.getPublishedPostBySlug(slug);
         if (!post.rows[0]) {
-            return res.status(404).render('error.handlebars', { message: 'Post not found or not published', code: 404 });
+            res.status(404);
+            return renderPage(req, res, 'error.hbs', false, { message: 'Post not found or not published', code: 404 });
         }
 
         const postId = post.rows[0].id;
         if (parent_id) {
             const parent = await commentRepository.findPostParentComment(parent_id, postId);
             if (!parent.rows[0]) {
-                return res.status(400).render('error.handlebars', { message: 'Invalid parent comment', code: 400 });
+                res.status(400);
+                return renderPage(req, res, 'error.hbs', false, { message: 'Invalid parent comment', code: 400 });
             }
         }
 
@@ -337,7 +352,8 @@ export async function createComment(req, res) {
         res.redirect(`/post/${slug}`);
     } catch (err) {
         console.error(err);
-        res.status(500).render('error.handlebars', { message: 'Error adding comment', code: 500 });
+        res.status(500);
+        return renderPage(req, res, 'error.hbs', false, { message: 'Error adding comment', code: 500 });
     }
 }
 
@@ -357,7 +373,7 @@ export async function getBookmarks(req, res) {
         }
 
         if (bookmarkIds.length === 0) {
-            return res.render('blog/bookmarks.handlebars', {
+            return renderPage(req, res, 'blog/bookmarks.hbs', true, {
                 posts: [],
                 canonicalUrl: `${req.protocol}://${req.get('host')}/bookmarks`
             });
@@ -366,13 +382,14 @@ export async function getBookmarks(req, res) {
         const statusFilter = getStatusSql(req);
         const result = await postRepository.getBookmarkedPosts(bookmarkIds, statusFilter);
 
-        res.render('blog/bookmarks.handlebars', {
+        return renderPage(req, res, 'blog/bookmarks.hbs', true, {
             posts: result.rows || [],
             canonicalUrl: `${req.protocol}://${req.get('host')}/bookmarks`
         });
     } catch (err) {
         console.error(err);
-        res.status(500).render('error.handlebars', { message: 'Server error', code: 500 });
+        res.status(500);
+        return renderPage(req, res, 'error.hbs', false, { message: 'Server error', code: 500 });
     }
 }
 

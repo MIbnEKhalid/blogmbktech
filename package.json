@@ -1,6 +1,6 @@
 {
   "name": "mbkblog",
-  "version": "2.4.0",
+  "version": "2.5.0",
   "main": "src/server.js",
   "type": "module",
   "scripts": {
@@ -40,6 +40,9 @@
   },
   "overrides": {
     "mbkauthe": "latest"
+  },
+  "allowScripts": {
+    "better-sqlite3@11.10.0": true
   }
 }
 

@@ -110,7 +110,7 @@ export const handlebarsHelpers = {
     return cat ? cat.name : '';
   },
 
-  cacheBuster: () => CACHE_VERSION,
+  cacheBuster: () => `?v=${CACHE_VERSION}`,
 
   add: (a, b) => Number(a) + Number(b),
   subtract: (a, b) => Number(a) - Number(b),

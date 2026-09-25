@@ -1,5 +1,6 @@
 import { postRepository, taxonomyRepository } from '../repositories/index.js';
 import { logActivity } from '../utils/activity-logger.js';
+import { renderPage } from 'mbkauthe';
 
 /**
  * 1. Posts List Page
@@ -21,27 +22,24 @@ export async function getPostsList(req, res) {
 
         if (category && category !== 'all') {
             params.push(category);
-            whereClauses.push(`EXISTS (SELECT 1 FROM blog_post_categories pc2 WHERE pc2.post_id = p.id AND (pc2.category_id::text = $${params.length} OR pc2.category_id IN (SELECT id FROM blog_categories WHERE name = $${params.length})))`);
+            whereClauses.push(`EXISTS (SELECT 1 FROM blog_post_categories bpc WHERE bpc.post_id = p.id AND bpc.category_id = $${params.length})`);
         }
 
         if (search && search.trim()) {
             params.push(`%${search.trim()}%`);
-            whereClauses.push(`(p.title ILIKE $${params.length} OR p.excerpt ILIKE $${params.length} OR p.content_markdown ILIKE $${params.length})`);
+            whereClauses.push(`(p.title ILIKE $${params.length} OR p.content_markdown ILIKE $${params.length} OR p.slug ILIKE $${params.length})`);
         }
 
-        const whereSql = whereClauses.length > 0 ? `WHERE ${whereClauses.join(' AND ')}` : '';
+        let orderBy = 'p.created_at DESC';
+        if (sort === 'oldest') orderBy = 'p.created_at ASC';
+        else if (sort === 'views') orderBy = 'p.views DESC';
+        else if (sort === 'title') orderBy = 'p.title ASC';
 
-        const orderMap = {
-            oldest: 'p.created_at ASC',
-            views_desc: 'p.views DESC, p.created_at DESC',
-            title_asc: 'p.title ASC',
-            updated: 'p.updated_at DESC'
-        };
-        const orderBy = orderMap[sort] || 'p.created_at DESC';
+        const whereClause = whereClauses.length > 0 ? `WHERE ${whereClauses.join(' AND ')}` : '';
 
         const [postsResult, statsResult, categoriesResult] = await Promise.all([
-            postRepository.getPostsList({ whereSql, orderBy, params }),
-            postRepository.getPostStats(),
+            postRepository.findPostsAdmin({ whereClause, params, orderBy }),
+            postRepository.getPostsDashboardStats(),
             taxonomyRepository.getAllCategories()
         ]);
 
@@ -51,8 +49,7 @@ export async function getPostsList(req, res) {
         const totalPages = Math.ceil(totalFiltered / limit) || 1;
         const stats = statsResult.rows[0] || {};
 
-        res.render('dashboard/posts.handlebars', {
-            layout: 'dashboard',
+        return renderPage(req, res, 'dashboard/posts.hbs', 'dashboard', {
             active: 'posts',
             posts: paginatedPosts,
             categories: categoriesResult.rows || [],
@@ -75,7 +72,8 @@ export async function getPostsList(req, res) {
         });
     } catch (err) {
         console.error('Error fetching posts:', err);
-        res.status(500).render('error.handlebars', { message: 'Error fetching posts', code: 500 });
+        res.status(500);
+        return renderPage(req, res, 'error.hbs', false, { message: 'Error fetching posts', code: 500 });
     }
 }
 
@@ -89,8 +87,7 @@ export async function getCreatePost(req, res) {
             taxonomyRepository.getAllTags()
         ]);
 
-        res.render('dashboard/edit-post.handlebars', {
-            layout: 'dashboard',
+        return renderPage(req, res, 'dashboard/edit-post.hbs', 'dashboard', {
             active: 'posts',
             isNew: true,
             categories: categories.rows || [],
@@ -99,7 +96,8 @@ export async function getCreatePost(req, res) {
         });
     } catch (err) {
         console.error('Error loading create post form:', err);
-        res.status(500).render('error.handlebars', { message: 'Error loading create post form', code: 500 });
+        res.status(500);
+        return renderPage(req, res, 'error.hbs', false, { message: 'Error loading create post form', code: 500 });
     }
 }
 
@@ -118,15 +116,15 @@ export async function getEditPost(req, res) {
         ]);
 
         if (!post.rows?.[0]) {
-            return res.status(404).render('error.handlebars', { message: 'Post not found', code: 404 });
+            res.status(404);
+            return renderPage(req, res, 'error.hbs', false, { message: 'Post not found', code: 404 });
         }
 
         const postData = post.rows[0];
         postData.tags = (postTags.rows || []).map(t => t.name);
         postData.categoryIds = (postCategories.rows || []).map(c => c.id);
 
-        res.render('dashboard/edit-post.handlebars', {
-            layout: 'dashboard',
+        return renderPage(req, res, 'dashboard/edit-post.hbs', 'dashboard', {
             active: 'posts',
             isNew: false,
             post: postData,
@@ -137,7 +135,8 @@ export async function getEditPost(req, res) {
         });
     } catch (err) {
         console.error('Error loading edit post form:', err);
-        res.status(500).render('error.handlebars', { message: 'Error loading edit post form', code: 500 });
+        res.status(500);
+        return renderPage(req, res, 'error.hbs', false, { message: 'Error loading edit post form', code: 500 });
     }
 }
 

@@ -1,23 +1,5 @@
--- ===========================
--- USERS AND SESSION TABLES (Shared MBKAuthe tables)
--- ===========================
-
-CREATE TABLE mbkcore_users (
-    user_id SERIAL PRIMARY KEY,
-    username VARCHAR(50) NOT NULL UNIQUE,
-    password VARCHAR(255) NOT NULL,
-    role VARCHAR(50) DEFAULT 'normaluser',
-    active BOOLEAN DEFAULT TRUE,
-    have_mail_account BOOLEAN DEFAULT FALSE,
-    session_id VARCHAR(255),
-    image TEXT
-);
-
-CREATE TABLE mbkcore_session (
-    sid VARCHAR PRIMARY KEY,
-    sess JSON NOT NULL,
-    expire TIMESTAMP NOT NULL
-);
+-- First The DB should have PrereQuisite SQL Query 
+-- for mbkauthe from mbkauthe/docs/schema/
 
 -- ===========================
 -- BLOG CORE STRUCTURE
@@ -125,12 +107,6 @@ INSERT INTO blog_tags (name) VALUES
 ('webdev'),
 ('database'),
 ('tutorial');
-
--- ===========================
--- SAMPLE USER (optional)
--- ===========================
-INSERT INTO mbkcore_users (username, password, role, active, have_mail_account) VALUES
-('admin', 'admin123', 'superadmin', TRUE, TRUE);
 
 -- ===========================
 -- DATABASE OPTIMIZATION: INDEXES FOR PERFORMANCE

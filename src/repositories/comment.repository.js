@@ -3,30 +3,36 @@ import { defaultAdapter } from '../db/index.js';
 
 export class CommentRepository extends BaseRepository {
   constructor(adapter = defaultAdapter) {
-    super(adapter);
+    super(adapter, {
+      defaultTable: 'blog_comments',
+      booleanColumns: ['is_approved'],
+      dateColumns: ['created_at'],
+    });
   }
 
   async getCommentsList() {
-    return this.query(`
+    const res = await this.query(`
       SELECT c.*, p.title as post_title, p.slug as post_slug 
       FROM blog_comments c 
       LEFT JOIN blog_posts p ON c.post_id = p.id 
       ORDER BY c.created_at DESC
     `);
+    return { ...res, rows: (res.rows || []).map((r) => this.normalizeEntity(r)) };
   }
 
   async getCommentStats() {
     return this.query(`
       SELECT 
         COUNT(*) as total_comments,
-        COUNT(CASE WHEN is_approved = true THEN 1 END) as approved_comments,
-        COUNT(CASE WHEN is_approved = false THEN 1 END) as pending_comments
+        COUNT(CASE WHEN is_approved = true OR is_approved = 1 THEN 1 END) as approved_comments,
+        COUNT(CASE WHEN is_approved = false OR is_approved = 0 THEN 1 END) as pending_comments
       FROM blog_comments
     `);
   }
 
   async moderateComment(id, isApproved) {
-    return this.query('UPDATE blog_comments SET is_approved = $1 WHERE id = $2', [isApproved, id]);
+    const val = this.dialect.name === 'sqlite' ? (isApproved ? 1 : 0) : isApproved;
+    return this.query('UPDATE blog_comments SET is_approved = $1 WHERE id = $2', [val, id]);
   }
 
   async findParentComment(id) {
@@ -34,21 +40,38 @@ export class CommentRepository extends BaseRepository {
   }
 
   async replyComment(content, username, postId, parentId) {
+    const nowFn = this.dialect.name === 'sqlite' ? 'CURRENT_TIMESTAMP' : 'NOW()';
+    const trueVal = this.dialect.name === 'sqlite' ? 1 : true;
     return this.query(
-      'INSERT INTO blog_comments (content, username, post_id, parent_id, is_approved, created_at) VALUES ($1, $2, $3, $4, true, NOW()) RETURNING id',
+      `INSERT INTO blog_comments (content, username, post_id, parent_id, is_approved, created_at) VALUES ($1, $2, $3, $4, ${trueVal}, ${nowFn}) RETURNING id`,
       [content, username, postId, parentId]
     );
   }
 
   async bulkApprove(ids) {
+    if (!Array.isArray(ids) || ids.length === 0) return { rowCount: 0 };
+    if (this.dialect.name === 'sqlite') {
+      const placeholders = ids.map(() => '?').join(',');
+      return this.query(`UPDATE blog_comments SET is_approved = 1 WHERE id IN (${placeholders})`, ids);
+    }
     return this.query('UPDATE blog_comments SET is_approved = true WHERE id = ANY($1)', [ids]);
   }
 
   async bulkUnapprove(ids) {
+    if (!Array.isArray(ids) || ids.length === 0) return { rowCount: 0 };
+    if (this.dialect.name === 'sqlite') {
+      const placeholders = ids.map(() => '?').join(',');
+      return this.query(`UPDATE blog_comments SET is_approved = 0 WHERE id IN (${placeholders})`, ids);
+    }
     return this.query('UPDATE blog_comments SET is_approved = false WHERE id = ANY($1)', [ids]);
   }
 
   async bulkDelete(ids) {
+    if (!Array.isArray(ids) || ids.length === 0) return { rowCount: 0 };
+    if (this.dialect.name === 'sqlite') {
+      const placeholders = ids.map(() => '?').join(',');
+      return this.query(`DELETE FROM blog_comments WHERE id IN (${placeholders})`, ids);
+    }
     return this.query('DELETE FROM blog_comments WHERE id = ANY($1)', [ids]);
   }
 

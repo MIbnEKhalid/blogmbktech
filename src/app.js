@@ -88,8 +88,8 @@ server.use((req, res, next) => {
 });
 
 // Configure Handlebars engine
-server.engine('handlebars', engine({
-  extname: '.handlebars',
+server.engine('hbs', engine({
+  extname: '.hbs',
   defaultLayout: 'main',
   partialsDir: [
     path.join(VIEWS_DIR, 'templates'),
@@ -103,7 +103,7 @@ server.engine('handlebars', engine({
   helpers: handlebarsHelpers
 }));
 
-server.set('view engine', 'handlebars');
+server.set('view engine', 'hbs');
 server.set('views', [
   VIEWS_DIR,
   path.join(process.cwd(), 'node_modules/mbkauthe/views'),

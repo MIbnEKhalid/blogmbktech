@@ -1,4 +1,5 @@
 import rateLimit from 'express-rate-limit';
+import { renderPage } from 'mbkauthe';
 
 // Strict rate limiting for potential bots
 export const botLimiter = rateLimit({
@@ -25,7 +26,8 @@ export const generalLimiter = rateLimit({
   standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
   legacyHeaders: false,  // Disable the `X-RateLimit-*` headers
   handler: (req, res) => {
-    res.status(429).render('error.handlebars', {
+    res.status(429);
+    return renderPage(req, res, 'error.hbs', false, {
       message: 'Too many requests from your IP. Try again later.',
       code: 429
     });
@@ -39,7 +41,8 @@ export const dashboardLimiter = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
   handler: (req, res) => {
-    res.status(429).render('error.handlebars', {
+    res.status(429);
+    return renderPage(req, res, 'error.hbs', false, {
       message: 'Too many requests from your IP. Try again later.',
       code: 429
     });

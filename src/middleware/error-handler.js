@@ -1,4 +1,4 @@
-import { isJsonRequest, sendError, sanitizeErrorDetails } from "mbkauthe";
+import { isJsonRequest, sendError, sanitizeErrorDetails, renderPage } from "mbkauthe";
 
 /**
  * 404 Not Found handler – must be registered after all routes.
@@ -11,7 +11,8 @@ export function notFoundHandler(req, res) {
       req,
     });
   }
-  res.status(404).render('error.handlebars', { message: 'Page not found', code: 404 });
+  res.status(404);
+  return renderPage(req, res, 'error.hbs', false, { message: 'Page not found', code: 404 });
 }
 
 /**
@@ -35,7 +36,8 @@ export function errorHandler(err, req, res, next) {
   }
 
   const sanitizedDetails = err.message ? sanitizeErrorDetails(err.message) : undefined;
-  res.status(status).render('error.handlebars', {
+  res.status(status);
+  return renderPage(req, res, 'error.hbs', false, {
     message,
     code: status,
     ...(sanitizedDetails ? { details: sanitizedDetails } : {}),

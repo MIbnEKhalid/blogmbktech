@@ -3,7 +3,7 @@ import { defaultAdapter } from '../db/index.js';
 
 export class TaxonomyRepository extends BaseRepository {
   constructor(adapter = defaultAdapter) {
-    super(adapter);
+    super(adapter, { defaultTable: 'blog_categories' });
   }
 
   // --- Category Methods ---

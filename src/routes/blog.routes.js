@@ -1,6 +1,6 @@
 import express from 'express';
 import rateLimit from 'express-rate-limit';
-import { sessPerm } from 'mbkauthe';
+import { sessPerm, renderPage } from 'mbkauthe';
 import { blogController } from '../controllers/index.js';
 
 const router = express.Router();
@@ -10,7 +10,10 @@ const imgLimiter = rateLimit({
     max: 50,
     standardHeaders: true,
     legacyHeaders: false,
-    handler: (req, res) => res.status(429).render('error.handlebars', { message: 'Too many requests. Try again later.', code: 429 })
+    handler: (req, res) => {
+        res.status(429);
+        return renderPage(req, res, 'error.hbs', false, { message: 'Too many requests. Try again later.', code: 429 });
+    }
 });
 
 // 1. Home / All Posts

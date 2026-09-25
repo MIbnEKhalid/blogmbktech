@@ -3,7 +3,10 @@ import { defaultAdapter } from '../db/index.js';
 
 export class ActivityLogRepository extends BaseRepository {
   constructor(adapter = defaultAdapter) {
-    super(adapter);
+    super(adapter, {
+      defaultTable: 'blog_activity_logs',
+      dateColumns: ['created_at', 'updated_at'],
+    });
     this.tablesInitialized = false;
   }
 
@@ -36,10 +39,11 @@ export class ActivityLogRepository extends BaseRepository {
   }
 
   async saveSettings(settingsMap) {
+    const nowFn = this.dialect.name === 'sqlite' ? 'CURRENT_TIMESTAMP' : 'NOW()';
     for (const [key, value] of Object.entries(settingsMap || {})) {
       await this.query(
-        `INSERT INTO blog_settings (key, value, updated_at) VALUES ($1, $2, NOW())
-         ON CONFLICT (key) DO UPDATE SET value = $2, updated_at = NOW()`,
+        `INSERT INTO blog_settings (key, value, updated_at) VALUES ($1, $2, ${nowFn})
+         ON CONFLICT (key) DO UPDATE SET value = $2, updated_at = ${nowFn}`,
         [key, String(value)]
       );
     }

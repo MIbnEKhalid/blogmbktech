@@ -4,7 +4,11 @@ import { generateSlug, parseArray } from '../utils/helpers.js';
 
 export class PostRepository extends BaseRepository {
   constructor(adapter = defaultAdapter) {
-    super(adapter);
+    super(adapter, {
+      defaultTable: 'blog_posts',
+      booleanColumns: ['is_published', 'featured'],
+      dateColumns: ['created_at', 'updated_at'],
+    });
   }
 
   // --- Helper to sync post categories within a transaction ---
@@ -32,9 +36,10 @@ export class PostRepository extends BaseRepository {
   }
 
   async getPostsList({ whereSql = '', orderBy = 'p.created_at DESC', params = [] }) {
-    return this.query(`
+    const agg = this.dialect.name === 'sqlite' ? 'GROUP_CONCAT(DISTINCT c.name)' : "STRING_AGG(DISTINCT c.name, ', ')";
+    const res = await this.query(`
       SELECT p.*, p.username as author_name,
-             STRING_AGG(DISTINCT c.name, ', ') as categories
+             ${agg} as categories
       FROM blog_posts p
       LEFT JOIN blog_post_categories pc ON p.id = pc.post_id
       LEFT JOIN blog_categories c ON pc.category_id = c.id
@@ -42,6 +47,7 @@ export class PostRepository extends BaseRepository {
       GROUP BY p.id
       ORDER BY ${orderBy}
     `, params);
+    return { ...res, rows: (res.rows || []).map((r) => this.normalizeEntity(r)) };
   }
 
   async getPostStats() {
@@ -57,7 +63,8 @@ export class PostRepository extends BaseRepository {
   }
 
   async findById(id) {
-    return this.query('SELECT * FROM blog_posts WHERE id = $1', [id]);
+    const res = await this.query('SELECT * FROM blog_posts WHERE id = $1', [id]);
+    return { ...res, rows: (res.rows || []).map((r) => this.normalizeEntity(r)) };
   }
 
   async findPostCategories(postId) {
@@ -72,10 +79,11 @@ export class PostRepository extends BaseRepository {
     return this.withTransaction(async (tx) => {
       const slug = (customSlug && customSlug.trim()) ? generateSlug(customSlug) : generateSlug(title);
       const postStatus = status || 'draft';
+      const isPublished = this.dialect.name === 'sqlite' ? (postStatus === 'published' ? 1 : 0) : (postStatus === 'published');
 
       const postResult = await tx.query(
-        'INSERT INTO blog_posts (title, slug, excerpt, content_markdown, status, preview_image, username) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id',
-        [title, slug, excerpt || null, content, postStatus, preview_image || null, username]
+        'INSERT INTO blog_posts (title, slug, excerpt, content_markdown, status, published, preview_image, username) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING id',
+        [title, slug, excerpt || null, content, postStatus, isPublished, preview_image || null, username]
       );
 
       const newPostId = postResult.rows[0].id;
@@ -89,10 +97,12 @@ export class PostRepository extends BaseRepository {
     return this.withTransaction(async (tx) => {
       const slug = (customSlug && customSlug.trim()) ? generateSlug(customSlug) : generateSlug(title);
       const postStatus = status || 'draft';
+      const nowFn = this.dialect.name === 'sqlite' ? 'CURRENT_TIMESTAMP' : 'NOW()';
+      const isPublished = this.dialect.name === 'sqlite' ? (postStatus === 'published' ? 1 : 0) : (postStatus === 'published');
 
       await tx.query(
-        'UPDATE blog_posts SET title = $1, slug = $2, excerpt = $3, content_markdown = $4, status = $5, preview_image = $6, updated_at = NOW() WHERE id = $7',
-        [title, slug, excerpt || null, content, postStatus, preview_image || null, id]
+        `UPDATE blog_posts SET title = $1, slug = $2, excerpt = $3, content_markdown = $4, status = $5, published = $6, preview_image = $7, updated_at = ${nowFn} WHERE id = $8`,
+        [title, slug, excerpt || null, content, postStatus, isPublished, preview_image || null, id]
       );
 
       await tx.query('DELETE FROM blog_post_categories WHERE post_id = $1', [id]);
@@ -106,9 +116,11 @@ export class PostRepository extends BaseRepository {
 
   async quickUpdate(id, { title, slug, status, categoryId }) {
     const cleanSlug = slug && slug.trim() ? generateSlug(slug) : generateSlug(title);
+    const nowFn = this.dialect.name === 'sqlite' ? 'CURRENT_TIMESTAMP' : 'NOW()';
+    const isPub = this.dialect.name === 'sqlite' ? (status === 'published' ? 1 : 0) : (status === 'published');
     await this.query(
-      'UPDATE blog_posts SET title = $1, slug = $2, status = $3, published = $4, updated_at = NOW() WHERE id = $5',
-      [title.trim(), cleanSlug, status || 'draft', status === 'published', id]
+      `UPDATE blog_posts SET title = $1, slug = $2, status = $3, published = $4, updated_at = ${nowFn} WHERE id = $5`,
+      [title.trim(), cleanSlug, status || 'draft', isPub, id]
     );
 
     if (categoryId) {
@@ -128,10 +140,12 @@ export class PostRepository extends BaseRepository {
       const orig = postResult.rows[0];
       const newTitle = `${orig.title} (Copy)`;
       const newSlug = `${orig.slug}-copy-${Date.now().toString().slice(-4)}`;
+      const nowFn = this.dialect.name === 'sqlite' ? 'CURRENT_TIMESTAMP' : 'NOW()';
+      const falseVal = this.dialect.name === 'sqlite' ? 0 : false;
 
       const newPost = await tx.query(
         `INSERT INTO blog_posts (title, slug, excerpt, content_markdown, status, published, preview_image, username, created_at, updated_at)
-         VALUES ($1, $2, $3, $4, 'draft', false, $5, $6, NOW(), NOW()) RETURNING id`,
+         VALUES ($1, $2, $3, $4, 'draft', ${falseVal}, $5, $6, ${nowFn}, ${nowFn}) RETURNING id`,
         [newTitle, newSlug, orig.excerpt, orig.content_markdown, orig.preview_image, username || 'admin']
       );
 
@@ -143,17 +157,34 @@ export class PostRepository extends BaseRepository {
   }
 
   async bulkUpdateStatus(ids, status, published) {
+    if (!Array.isArray(ids) || ids.length === 0) return;
     return this.withTransaction(async (tx) => {
-      await tx.query('UPDATE blog_posts SET status = $1, published = $2, updated_at = NOW() WHERE id = ANY($3)', [status, published, ids]);
+      const nowFn = this.dialect.name === 'sqlite' ? 'CURRENT_TIMESTAMP' : 'NOW()';
+      const pubVal = this.dialect.name === 'sqlite' ? (published ? 1 : 0) : published;
+      if (this.dialect.name === 'sqlite') {
+        const ph = ids.map(() => '?').join(',');
+        await tx.query(`UPDATE blog_posts SET status = ?, published = ?, updated_at = ${nowFn} WHERE id IN (${ph})`, [status, pubVal, ...ids]);
+      } else {
+        await tx.query(`UPDATE blog_posts SET status = $1, published = $2, updated_at = ${nowFn} WHERE id = ANY($3)`, [status, pubVal, ids]);
+      }
     });
   }
 
   async bulkDelete(ids) {
+    if (!Array.isArray(ids) || ids.length === 0) return;
     return this.withTransaction(async (tx) => {
-      await tx.query('DELETE FROM blog_comments WHERE post_id = ANY($1)', [ids]);
-      await tx.query('DELETE FROM blog_post_categories WHERE post_id = ANY($1)', [ids]);
-      await tx.query('DELETE FROM blog_post_tags WHERE post_id = ANY($1)', [ids]);
-      await tx.query('DELETE FROM blog_posts WHERE id = ANY($1)', [ids]);
+      if (this.dialect.name === 'sqlite') {
+        const ph = ids.map(() => '?').join(',');
+        await tx.query(`DELETE FROM blog_comments WHERE post_id IN (${ph})`, ids);
+        await tx.query(`DELETE FROM blog_post_categories WHERE post_id IN (${ph})`, ids);
+        await tx.query(`DELETE FROM blog_post_tags WHERE post_id IN (${ph})`, ids);
+        await tx.query(`DELETE FROM blog_posts WHERE id IN (${ph})`, ids);
+      } else {
+        await tx.query('DELETE FROM blog_comments WHERE post_id = ANY($1)', [ids]);
+        await tx.query('DELETE FROM blog_post_categories WHERE post_id = ANY($1)', [ids]);
+        await tx.query('DELETE FROM blog_post_tags WHERE post_id = ANY($1)', [ids]);
+        await tx.query('DELETE FROM blog_posts WHERE id = ANY($1)', [ids]);
+      }
     });
   }
 
@@ -171,11 +202,12 @@ export class PostRepository extends BaseRepository {
   }
 
   async fetchPostList({ whereClause, joinClause = '', params = [], limit = 10, offset = 0 }) {
+    const agg = this.dialect.name === 'sqlite' ? 'GROUP_CONCAT(DISTINCT c.name)' : "STRING_AGG(DISTINCT c.name, ', ')";
     const [countRes, postsRes] = await Promise.all([
       this.query(`SELECT COUNT(DISTINCT p.id) as total FROM blog_posts p ${joinClause} ${whereClause}`, params),
       this.query(`
         SELECT p.*, 
-               STRING_AGG(DISTINCT c.name, ', ') as categories,
+               ${agg} as categories,
                (SELECT COUNT(*) FROM blog_comments WHERE post_id = p.id) as comment_count,
                u.username,
                u.username as author_name,
@@ -194,17 +226,25 @@ export class PostRepository extends BaseRepository {
 
     const totalPosts = parseInt(countRes.rows[0]?.total || 0, 10);
     const totalPages = Math.ceil(totalPosts / limit) || 1;
-    return { posts: postsRes.rows || [], totalPosts, totalPages };
+    return { posts: (postsRes.rows || []).map((r) => this.normalizeEntity(r)), totalPosts, totalPages };
   }
 
   async findBySlug(slug) {
-    return this.query(`
+    const agg = this.dialect.name === 'sqlite' ? 'GROUP_CONCAT(DISTINCT c.name)' : "STRING_AGG(DISTINCT c.name, ', ')";
+    const catIdsAgg = this.dialect.name === 'sqlite'
+      ? "json_group_array(DISTINCT c.id) FILTER (WHERE c.id IS NOT NULL)"
+      : "ARRAY_AGG(DISTINCT c.id) FILTER (WHERE c.id IS NOT NULL)";
+    const catNamesAgg = this.dialect.name === 'sqlite'
+      ? "json_group_array(DISTINCT c.name) FILTER (WHERE c.name IS NOT NULL)"
+      : "ARRAY_AGG(DISTINCT c.name) FILTER (WHERE c.name IS NOT NULL)";
+
+    const res = await this.query(`
       SELECT p.*, 
-             STRING_AGG(DISTINCT c.name, ', ') as categories,
+             ${agg} as categories,
              u.username as author_name,
              u.image as author_image,
-             ARRAY_AGG(DISTINCT c.id) FILTER (WHERE c.id IS NOT NULL) as category_ids,
-             ARRAY_AGG(DISTINCT c.name) FILTER (WHERE c.name IS NOT NULL) as category_names
+             ${catIdsAgg} as category_ids,
+             ${catNamesAgg} as category_names
       FROM blog_posts p
       LEFT JOIN mbkcore_users u ON p.username = u.username
       LEFT JOIN blog_post_categories pc ON p.id = pc.post_id
@@ -212,6 +252,7 @@ export class PostRepository extends BaseRepository {
       WHERE p.slug = $1 AND p.status IN ('published', 'private')
       GROUP BY p.id, u.username, u.image
     `, [slug]);
+    return { ...res, rows: (res.rows || []).map((r) => this.normalizeEntity(r)) };
   }
 
   async incrementViews(id) {
@@ -219,14 +260,33 @@ export class PostRepository extends BaseRepository {
   }
 
   async getRelatedPosts(postId, categoryIds = []) {
+    const agg = this.dialect.name === 'sqlite' ? 'GROUP_CONCAT(DISTINCT c.name)' : "STRING_AGG(DISTINCT c.name, ', ')";
     const cleanCatIds = (categoryIds || []).filter(Boolean);
     if (cleanCatIds.length > 0) {
+      if (this.dialect.name === 'sqlite') {
+        const ph = cleanCatIds.map(() => '?').join(',');
+        return this.query(`
+          SELECT DISTINCT p.id, p.title, p.slug, p.preview_image, p.created_at, p.content_markdown,
+                 u.username,
+                 u.username as author_name,
+                 u.image as author_image,
+                 ${agg} as categories
+          FROM blog_posts p
+          LEFT JOIN mbkcore_users u ON p.username = u.username
+          LEFT JOIN blog_post_categories pc ON p.id = pc.post_id
+          LEFT JOIN blog_categories c ON pc.category_id = c.id
+          WHERE p.id != ? AND p.status = 'published' AND pc.category_id IN (${ph})
+          GROUP BY p.id, u.username, u.image
+          ORDER BY p.created_at DESC
+          LIMIT 3
+        `, [postId, ...cleanCatIds]);
+      }
       return this.query(`
         SELECT DISTINCT p.id, p.title, p.slug, p.preview_image, p.created_at, p.content_markdown,
                u.username,
                u.username as author_name,
                u.image as author_image,
-               STRING_AGG(DISTINCT c.name, ', ') as categories
+               ${agg} as categories
         FROM blog_posts p
         LEFT JOIN mbkcore_users u ON p.username = u.username
         LEFT JOIN blog_post_categories pc ON p.id = pc.post_id
@@ -242,7 +302,7 @@ export class PostRepository extends BaseRepository {
              u.username,
              u.username as author_name,
              u.image as author_image,
-             STRING_AGG(DISTINCT c.name, ', ') as categories
+             ${agg} as categories
       FROM blog_posts p
       LEFT JOIN mbkcore_users u ON p.username = u.username
       LEFT JOIN blog_post_categories pc ON p.id = pc.post_id
@@ -255,9 +315,29 @@ export class PostRepository extends BaseRepository {
   }
 
   async getBookmarkedPosts(ids, statusFilter) {
+    if (!Array.isArray(ids) || ids.length === 0) return { rows: [] };
+    const agg = this.dialect.name === 'sqlite' ? 'GROUP_CONCAT(DISTINCT c.name)' : "STRING_AGG(DISTINCT c.name, ', ')";
+    if (this.dialect.name === 'sqlite') {
+      const ph = ids.map(() => '?').join(',');
+      return this.query(`
+        SELECT p.*, 
+               ${agg} as categories,
+               (SELECT COUNT(*) FROM blog_comments WHERE post_id = p.id) as comment_count,
+               u.username,
+               u.username as author_name,
+               u.image as author_image
+        FROM blog_posts p
+        LEFT JOIN blog_post_categories pc ON p.id = pc.post_id
+        LEFT JOIN blog_categories c ON pc.category_id = c.id
+        LEFT JOIN mbkcore_users u ON p.username = u.username
+        WHERE p.status ${statusFilter} AND p.id IN (${ph})
+        GROUP BY p.id, u.username, u.image
+        ORDER BY p.created_at DESC
+      `, ids);
+    }
     return this.query(`
       SELECT p.*, 
-             STRING_AGG(DISTINCT c.name, ', ') as categories,
+             ${agg} as categories,
              (SELECT COUNT(*) FROM blog_comments WHERE post_id = p.id) as comment_count,
              u.username,
              u.username as author_name,
@@ -288,8 +368,9 @@ export class PostRepository extends BaseRepository {
   }
 
   async getRecentPosts(limit = 5) {
+    const agg = this.dialect.name === 'sqlite' ? 'GROUP_CONCAT(c.name)' : "STRING_AGG(c.name, ', ')";
     return this.query(`
-      SELECT p.*, p.username as author_name, STRING_AGG(c.name, ', ') as categories
+      SELECT p.*, p.username as author_name, ${agg} as categories
       FROM blog_posts p
       LEFT JOIN blog_post_categories pc ON p.id = pc.post_id
       LEFT JOIN blog_categories c ON pc.category_id = c.id
@@ -303,7 +384,7 @@ export class PostRepository extends BaseRepository {
     return this.query(`
       SELECT 
         COALESCE(SUM(views), 0) as total_views,
-        COALESCE(AVG(views), 0)::integer as avg_views,
+        CAST(COALESCE(AVG(views), 0) AS INTEGER) as avg_views,
         COUNT(*) as total_posts,
         (SELECT COUNT(*) FROM blog_comments) as total_comments
       FROM blog_posts
@@ -311,10 +392,11 @@ export class PostRepository extends BaseRepository {
   }
 
   async getTopPosts(limit = 10) {
+    const agg = this.dialect.name === 'sqlite' ? 'GROUP_CONCAT(DISTINCT c.name)' : "STRING_AGG(DISTINCT c.name, ', ')";
     return this.query(`
       SELECT p.id, p.title, p.slug, p.views, p.created_at, p.status,
              (SELECT COUNT(*) FROM blog_comments WHERE post_id = p.id) as comment_count,
-             STRING_AGG(DISTINCT c.name, ', ') as categories
+             ${agg} as categories
       FROM blog_posts p
       LEFT JOIN blog_post_categories pc ON p.id = pc.post_id
       LEFT JOIN blog_categories c ON pc.category_id = c.id
@@ -353,7 +435,8 @@ export class PostRepository extends BaseRepository {
   }
 
   async globalSearchPosts(search, limit = 5) {
-    return this.query('SELECT id, title, slug, status, created_at FROM blog_posts WHERE title ILIKE $1 OR excerpt ILIKE $1 LIMIT $2', [search, limit]);
+    const matchOp = this.dialect.name === 'sqlite' ? 'LIKE' : 'ILIKE';
+    return this.query(`SELECT id, title, slug, status, created_at FROM blog_posts WHERE title ${matchOp} $1 OR excerpt ${matchOp} $1 LIMIT $2`, [search, limit]);
   }
 
   async downloadAllPosts() {

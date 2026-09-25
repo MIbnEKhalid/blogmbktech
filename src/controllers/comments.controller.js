@@ -1,4 +1,5 @@
 import { commentRepository } from '../repositories/index.js';
+import { renderPage } from 'mbkauthe';
 
 /**
  * 1. Comments Moderation Page
@@ -11,8 +12,7 @@ export async function getCommentsList(req, res) {
         ]);
 
         const statsRow = stats.rows[0] || {};
-        res.render('dashboard/comments.handlebars', {
-            layout: 'dashboard',
+        return renderPage(req, res, 'dashboard/comments.hbs', 'dashboard', {
             active: 'comments',
             comments: comments.rows || [],
             stats: statsRow,
@@ -24,7 +24,8 @@ export async function getCommentsList(req, res) {
         });
     } catch (err) {
         console.error('Error fetching comments:', err);
-        res.status(500).render('error.handlebars', { message: 'Error fetching comments', code: 500 });
+        res.status(500);
+        return renderPage(req, res, 'error.hbs', false, { message: 'Error fetching comments', code: 500 });
     }
 }
 
