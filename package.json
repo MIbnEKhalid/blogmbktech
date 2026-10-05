@@ -27,8 +27,8 @@
     "express-rate-limit": "^8.7.0",
     "jsdom": "^26.1.0",
     "marked": "^18.0.14",
-    "mbkauthe": "file:../mbkauthe",
-    "mbkbucket": "file:../mbkbucket",
+    "mbkauthe": "latest",
+    "mbkbucket": "latest",
     "pg": "^8.23.1",
     "prismjs": "^1.30.0"
   },
