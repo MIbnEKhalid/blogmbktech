@@ -81,7 +81,7 @@
                                 {{#if post.author_image}}
                                 <img src="{{post.author_image}}" alt="{{post.username}}">
                                 {{else}}
-                                <span class="avatar-initials">{{firstLetter post.username}}</span>
+                                <span class="avatar-initials">{{getInitials post.username}}</span>
                                 {{/if}}
                             </div>
                             <div class="author-info-wrap">
@@ -166,7 +166,7 @@
                         {{#if post.author_image}}
                         <img src="{{post.author_image}}" alt="{{post.username}}">
                         {{else}}
-                        <span class="avatar-initials">{{firstLetter post.username}}</span>
+                        <span class="avatar-initials">{{getInitials post.username}}</span>
                         {{/if}}
                     </div>
                     <div class="author-bio-info">
@@ -216,7 +216,7 @@
                                     {{#if this.author_image}}
                                     <img src="{{this.author_image}}" alt="{{this.username}}" class="related-author-avatar">
                                     {{else}}
-                                    <span class="related-author-avatar-fallback">{{firstLetter this.username}}</span>
+                                    <span class="related-author-avatar-fallback">{{getInitials this.username}}</span>
                                     {{/if}}
                                     <span class="related-author-name">{{this.username}}</span>
                                 </span>
@@ -251,10 +251,10 @@
                                 {{#if profile_image_url}}
                                 <img src="{{profile_image_url}}" alt="{{user.username}}">
                                 {{else}}
-                                <span class="avatar-initials">{{firstLetter (coalesce user.username 'U')}}</span>
+                                <span class="avatar-initials">{{getInitials (default user.username 'U')}}</span>
                                 {{/if}}
                             </div>
-                            <span style="font-weight: 700; color: var(--dark-color-ml); font-size: 0.9rem;">{{coalesce user.username 'Member'}}</span>
+                            <span style="font-weight: 700; color: var(--dark-color-ml); font-size: 0.9rem;">{{default user.username 'Member'}}</span>
                         </div>
                     </div>
                     <div id="replyingTo" class="replying-to-bar" style="display: none;">
@@ -289,7 +289,7 @@
                                         {{#if this.author_image}}
                                         <img src="{{this.author_image}}" alt="{{this.username}}">
                                         {{else}}
-                                        <span class="avatar-initials">{{firstLetter this.username}}</span>
+                                        <span class="avatar-initials">{{getInitials this.username}}</span>
                                         {{/if}}
                                     </div>
                                     <div>
@@ -348,7 +348,7 @@
                                             {{#if this.author_image}}
                                             <img src="{{this.author_image}}" alt="{{this.username}}">
                                             {{else}}
-                                            <span class="avatar-initials">{{firstLetter this.username}}</span>
+                                            <span class="avatar-initials">{{getInitials this.username}}</span>
                                             {{/if}}
                                         </div>
                                         <div class="comment-author">
@@ -399,7 +399,7 @@
                             {{#if post.author_image}}
                             <img src="{{post.author_image}}" alt="{{post.username}}">
                             {{else}}
-                            <span class="avatar-initials">{{firstLetter post.username}}</span>
+                            <span class="avatar-initials">{{getInitials post.username}}</span>
                             {{/if}}
                         </div>
                         <div class="author-widget-meta">

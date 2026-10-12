@@ -1,5 +1,5 @@
 import { taxonomyRepository } from '../repositories/index.js';
-import { renderPage } from 'mbkauthe';
+import { renderPage } from 'mbkutils';
 
 /**
  * 1. Categories Management Page

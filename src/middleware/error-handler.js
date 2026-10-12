@@ -1,48 +1,16 @@
-import { isJsonRequest, sendError, sanitizeErrorDetails, renderPage } from "mbkauthe";
+import { createNotFoundHandler, createErrorHandler } from "mbkutils";
 
-/**
- * 404 Not Found handler – must be registered after all routes.
- */
-export function notFoundHandler(req, res) {
-  if (isJsonRequest(req)) {
-    return sendError(res, "Page not found", {
-      statusCode: 404,
-      code: "ROUTE_NOT_FOUND",
-      req,
-    });
-  }
-  res.status(404);
-  return renderPage(req, res, 'error.hbs', false, { message: 'Page not found', code: 404 });
-}
+export const notFoundHandler = createNotFoundHandler({
+  appName: "Blog",
+  defaultPage: "/",
+  defaultPageName: "Home",
+});
 
-/**
- * Global error handler – must be registered last with four parameters.
- */
-export function errorHandler(err, req, res, next) {
-  if (res.headersSent) {
-    return next(err);
-  }
-
-  console.error('Unhandled error:', err);
-  const status = Number(err.status || err.statusCode || 500);
-  const message = err.message || 'Internal Server Error';
-
-  if (isJsonRequest(req)) {
-    return sendError(res, err, {
-      statusCode: status,
-      req,
-      details: process.env.NODE_ENV !== 'production' ? err.stack : undefined,
-    });
-  }
-
-  const sanitizedDetails = err.message ? sanitizeErrorDetails(err.message) : undefined;
-  res.status(status);
-  return renderPage(req, res, 'error.hbs', false, {
-    message,
-    code: status,
-    ...(sanitizedDetails ? { details: sanitizedDetails } : {}),
-  });
-}
+export const errorHandler = createErrorHandler({
+  appName: "Blog",
+  defaultPage: "/",
+  defaultPageName: "Home",
+});
 
 export default {
   notFoundHandler,

@@ -71,11 +71,11 @@
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
                     <div class="form-group">
                         <label class="form-label">Blog Title</label>
-                        <input type="text" name="blog_title" class="form-input" value="{{coalesce settings.blog_title 'MBK Blog'}}" required>
+                        <input type="text" name="blog_title" class="form-input" value="{{default settings.blog_title 'MBK Blog'}}" required>
                     </div>
                     <div class="form-group">
                         <label class="form-label">Site Tagline</label>
-                        <input type="text" name="blog_tagline" class="form-input" value="{{coalesce settings.blog_tagline 'Tech & Coding Insights'}}">
+                        <input type="text" name="blog_tagline" class="form-input" value="{{default settings.blog_tagline 'Tech & Coding Insights'}}">
                     </div>
                 </div>
 
@@ -87,7 +87,7 @@
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
                     <div class="form-group">
                         <label class="form-label">Posts Per Page</label>
-                        <input type="number" name="posts_per_page" class="form-input" value="{{coalesce settings.posts_per_page 10}}" min="1" max="100">
+                        <input type="number" name="posts_per_page" class="form-input" value="{{default settings.posts_per_page 10}}" min="1" max="100">
                     </div>
                     <div class="form-group">
                         <label class="form-label">Default Post Status</label>

@@ -1,6 +1,6 @@
 {{#section 'styles'}}
 <title>{{#if isNew}}New Post{{else}}Edit: {{post.title}}{{/if}} — MBK Admin</title>
-<link rel="stylesheet" href="/mbkbucket/mbkbucket-helper.css">
+<link rel="stylesheet" href="/mbkbucket/mbkbucket-helper.css{{bcachebust}}">
 <style>
     .editor-wrapper {
         display: flex;
@@ -754,9 +754,9 @@
                         </div>
 
                         <div class="serp-card-light">
-                            <div class="serp-site">blog.mbktech.org &rsaquo; post &rsaquo; <span id="serpSlugPreview">{{coalesce post.slug 'post-url'}}</span></div>
-                            <div class="serp-link" id="serpTitlePreview">{{coalesce post.title 'Post Title Preview'}}</div>
-                            <div class="serp-snippet" id="serpDescPreview">{{coalesce post.excerpt 'Excerpt preview in Google Search results...'}}</div>
+                            <div class="serp-site">blog.mbktech.org &rsaquo; post &rsaquo; <span id="serpSlugPreview">{{default post.slug 'post-url'}}</span></div>
+                            <div class="serp-link" id="serpTitlePreview">{{default post.title 'Post Title Preview'}}</div>
+                            <div class="serp-snippet" id="serpDescPreview">{{default post.excerpt 'Excerpt preview in Google Search results...'}}</div>
                         </div>
                     </div>
                 </div>
@@ -830,7 +830,7 @@
 </div>
 
 {{#section 'scripts'}}
-<script src="/mbkbucket/mbkbucket-helper.js"></script>
+<script src="/mbkbucket/mbkbucket-helper.js{{bcachebust}}"></script>
 <script>
     // --- DOM Elements ---
     const form = document.getElementById('postEditorForm');

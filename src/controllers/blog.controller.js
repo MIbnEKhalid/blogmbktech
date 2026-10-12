@@ -1,5 +1,5 @@
 import { downloadFile } from 'mbkbucket';
-import { renderPage } from 'mbkauthe';
+import { renderPage } from 'mbkutils';
 import fs from 'fs';
 import path from 'path';
 import { PUBLIC_DIR } from '../config/constants.js';

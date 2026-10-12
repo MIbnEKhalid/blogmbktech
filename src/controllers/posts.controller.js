@@ -1,6 +1,6 @@
 import { postRepository, taxonomyRepository } from '../repositories/index.js';
 import { logActivity } from '../utils/activity-logger.js';
-import { renderPage } from 'mbkauthe';
+import { renderPage } from 'mbkutils';
 
 /**
  * 1. Posts List Page

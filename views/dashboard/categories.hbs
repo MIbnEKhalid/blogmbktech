@@ -62,7 +62,7 @@
                             <strong style="color: var(--text-primary); font-size: 0.95rem;">{{this.name}}</strong>
                         </td>
                         <td style="color: var(--text-muted); font-size: 0.85rem;">
-                            {{coalesce this.description '—'}}
+                            {{default this.description '—'}}
                         </td>
                         <td>
                             <a href="/dashboard/posts?category={{this.id}}" class="badge badge-category" style="font-weight: 700;">

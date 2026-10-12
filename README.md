@@ -100,7 +100,7 @@ psql "<YOUR_POSTGRES_URL>" -f docs/db.sql
 
 ### 5. Run the Application
 ```bash
-# Development mode with hot-reloading (nodemon)
+# Development mode with hot-reloading
 npm run dev
 
 # Production mode
@@ -115,7 +115,7 @@ Access the application in your browser at: `http://localhost:3126`
 
 | Command | Description |
 | :--- | :--- |
-| `npm run dev` | Starts the server in development mode with `nodemon` auto-reload. |
+| `npm run dev` | Starts the server in development mode with node `--watch` auto-reload. |
 | `npm start` | Starts the server in production mode with standard `node`. |
 | `npm run generate-sitemap` | Generates updated XML sitemaps for posts, categories, and tags. |
 | `npm run generate-posts` | Generates static JSON cache snapshots for published posts in `public/posts/`. |

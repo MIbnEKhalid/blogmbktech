@@ -12,7 +12,7 @@
     {{#if canonicalUrl}}
     <link rel="canonical" href="{{canonicalUrl}}" />
     {{/if}}
-    <link rel="icon" type="image/svg+xml" href="/icon.svg">
+    <link rel="icon" type="image/svg+xml" href="/icon.svg{{cacheBust}}">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Sora:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -20,17 +20,17 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css">
     
     <!-- Modular Blog Styles -->
-    <link rel="stylesheet" href="/assets/css/blog-main.css{{cacheBuster}}">
-    <link rel="stylesheet" href="/assets/css/markdown.css{{cacheBuster}}">
-    <link rel="stylesheet" href="/assets/css/post-card.css{{cacheBuster}}">
-    <link rel="stylesheet" href="/assets/css/search-filter.css{{cacheBuster}}">
+    <link rel="stylesheet" href="/assets/css/blog-main.css{{cacheBust}}">
+    <link rel="stylesheet" href="/assets/css/markdown.css{{cacheBust}}">
+    <link rel="stylesheet" href="/assets/css/post-card.css{{cacheBust}}">
+    <link rel="stylesheet" href="/assets/css/search-filter.css{{cacheBust}}">
 
     <!-- Syntax Highlighting & Core Scripts -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js" defer></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js" defer></script>
-    <script src="/assets/js/blog-main.js{{cacheBuster}}" defer></script>
-    <script src="/assets/js/markdown-enhancer.js{{cacheBuster}}" defer></script>
-    <script src="/mbkauthe/main.js" defer></script>
+    <script src="/assets/js/blog-main.js{{cacheBust}}" defer></script>
+    <script src="/assets/js/markdown-enhancer.js{{cacheBust}}" defer></script>
+    <script src="/mbkauthe/main.js{{acachebust}}" defer></script>
 
     {{{_sections.styles}}}
 </head>
@@ -58,7 +58,7 @@
                                 {{#if profile_image_url}}
                                 <img src="{{profile_image_url}}" alt="{{user.username}}" style="width: 100%; height: 100%; object-fit: cover;" class="user-cookie-avatar">
                                 {{else}}
-                                <span>{{firstLetter (coalesce user.username 'A')}}</span>
+                                <span>{{getInitials (default user.username 'A')}}</span>
                                 {{/if}}
                             </div>
                             <span>Dashboard</span>
@@ -150,7 +150,7 @@
         </div>
     </footer>
 
-    <script src="/assets/js/preloader.js{{cacheBuster}}" defer></script>
+    <script src="/assets/js/preloader.js{{cacheBust}}" defer></script>
 </body>
 
 </html>

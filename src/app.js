@@ -2,7 +2,7 @@ import express from 'express';
 import path from 'path';
 import dotenv from 'dotenv';
 import mbkauthe, { sessPerm } from 'mbkauthe';
-import { engine } from 'express-handlebars';
+import { setupViewEngine } from 'mbkutils';
 import compression from 'compression';
 import cookieParser from 'cookie-parser';
 
@@ -88,28 +88,14 @@ server.use((req, res, next) => {
 });
 
 // Configure Handlebars engine
-server.engine('hbs', engine({
-  extname: '.hbs',
+setupViewEngine(server, {
+  rootDir: process.cwd(),
+  viewsDir: VIEWS_DIR,
   defaultLayout: 'main',
-  partialsDir: [
-    path.join(VIEWS_DIR, 'templates'),
-    path.join(VIEWS_DIR, 'templates/notice'),
-    VIEWS_DIR,
-    path.join(VIEWS_DIR, 'partials'),
-    path.join(process.cwd(), 'node_modules/mbkauthe/views'),
-    path.join(process.cwd(), 'node_modules/mbkbucket/views'),
-  ],
-  cache: process.env.NODE_ENV === 'production',
-  helpers: handlebarsHelpers
-}));
-
-server.set('view engine', 'hbs');
-server.set('views', [
-  VIEWS_DIR,
-  path.join(process.cwd(), 'node_modules/mbkauthe/views'),
-  path.join(process.cwd(), 'node_modules/mbkbucket/views'),
-
-]);
+  additionalViewsDirs: [path.join(process.cwd(), 'node_modules/mbkbucket/views')],
+  additionalPartialsDirs: [path.join(process.cwd(), 'node_modules/mbkbucket/views')],
+  helpers: handlebarsHelpers,
+});
 
 // Apply general limiter to application routes (after static assets)
 server.use(generalLimiter);

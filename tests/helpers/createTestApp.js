@@ -1,5 +1,5 @@
 import express from "express";
-import { engine } from "express-handlebars";
+import { setupViewEngine } from "mbkutils";
 import { dashboardRouter, blogRouter, postsRouter, commentsRouter, categoriesRouter, tagsRouter, mediaRouter, aiRouter } from "../../src/routes/index.js";
 import { handlebarsHelpers } from "../../src/utils/handlebars-helpers.js";
 import { VIEWS_DIR } from "../../src/config/constants.js";
@@ -15,16 +15,11 @@ export function createTestApp({ user = { username: "admin", role: "superadmin" }
   app.use(express.json());
   app.use(express.urlencoded({ extended: true }));
 
-  app.engine(
-    "hbs",
-    engine({
-      extname: ".hbs",
-      defaultLayout: "main",
-      helpers: handlebarsHelpers,
-    })
-  );
-  app.set("view engine", "hbs");
-  app.set("views", VIEWS_DIR);
+  setupViewEngine(app, {
+    viewsDir: VIEWS_DIR,
+    defaultLayout: "main",
+    helpers: handlebarsHelpers,
+  });
 
   // Session injection middleware
   app.use((req, res, next) => {

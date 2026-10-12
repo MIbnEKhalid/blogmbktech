@@ -1,6 +1,7 @@
 import express from 'express';
 import rateLimit from 'express-rate-limit';
-import { sessPerm, renderPage } from 'mbkauthe';
+import { sessPerm } from 'mbkauthe';
+import { renderPage } from 'mbkutils';
 import { blogController } from '../controllers/index.js';
 
 const router = express.Router();

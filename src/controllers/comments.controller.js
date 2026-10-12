@@ -1,5 +1,5 @@
 import { commentRepository } from '../repositories/index.js';
-import { renderPage } from 'mbkauthe';
+import { renderPage } from 'mbkutils';
 
 /**
  * 1. Comments Moderation Page

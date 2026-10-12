@@ -274,13 +274,13 @@
                         </div>
                     </td>
                     <td>
-                        <span class="badge badge-category">{{coalesce this.categories 'Uncategorized'}}</span>
+                        <span class="badge badge-category">{{default this.categories 'Uncategorized'}}</span>
                     </td>
                     <td>
                         <span class="badge badge-{{this.status}}">{{this.status}}</span>
                     </td>
                     <td style="color: var(--text-secondary); font-size: 0.85rem;">
-                        {{coalesce this.author_name 'Admin'}}
+                        {{default this.author_name 'Admin'}}
                     </td>
                     <td>
                         <span style="font-family: var(--font-mono); color: var(--accent-cyan); font-weight: 600;">
@@ -288,7 +288,7 @@
                         </span>
                     </td>
                     <td style="color: var(--text-muted); font-size: 0.8rem;">
-                        {{formatDateShort this.created_at}}
+                        {{formatDateOnly this.created_at}}
                     </td>
                     <td style="text-align: right; white-space: nowrap;">
                         <button onclick="openQuickEdit({{jsonStringify this}})" class="btn btn-sm btn-secondary" title="Quick Edit">
@@ -335,17 +335,17 @@
         {{/if}}
         <div class="post-card-body">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
-                <span class="badge badge-category">{{coalesce this.categories 'Uncategorized'}}</span>
+                <span class="badge badge-category">{{default this.categories 'Uncategorized'}}</span>
                 <span class="badge badge-{{this.status}}">{{this.status}}</span>
             </div>
             <a href="/dashboard/posts/edit/{{this.id}}" style="font-weight: 700; color: var(--text-primary); font-size: 1.05rem; margin-bottom: 0.5rem;">
                 {{this.title}}
             </a>
             <p style="font-size: 0.85rem; color: var(--text-muted); line-height: 1.4; flex: 1;">
-                {{truncate (coalesce this.excerpt this.content_markdown) 90}}
+                {{truncate (default this.excerpt this.content_markdown) 90}}
             </p>
             <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--border-subtle); padding-top: 0.75rem; margin-top: 0.75rem;">
-                <span style="font-size: 0.8rem; color: var(--text-faint);">{{formatDateShort this.created_at}}</span>
+                <span style="font-size: 0.8rem; color: var(--text-faint);">{{formatDateOnly this.created_at}}</span>
                 <div style="display: flex; gap: 0.35rem;">
                     <a href="/dashboard/posts/edit/{{this.id}}" class="btn btn-sm btn-secondary"><i class="fas fa-edit"></i></a>
                     <button onclick="deletePost({{this.id}}, '{{this.title}}')" class="btn btn-sm btn-danger"><i class="fas fa-trash"></i></button>

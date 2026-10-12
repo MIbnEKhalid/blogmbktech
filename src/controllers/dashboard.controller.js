@@ -3,7 +3,7 @@ import fs from 'fs';
 import { PUBLIC_DIR } from '../config/constants.js';
 import { postRepository, commentRepository, taxonomyRepository, activityLogRepository } from '../repositories/index.js';
 import { generateAllSitemaps } from '../utils/sitemap.js';
-import { renderPage } from 'mbkauthe';
+import { renderPage } from 'mbkutils';
 
 /**
  * 1. Dashboard Overview (/dashboard)
