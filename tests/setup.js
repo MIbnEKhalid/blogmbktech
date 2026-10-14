@@ -16,12 +16,10 @@ process.env.GEMINI_API_KEY = "test-gemini-key";
 // Mock validateSessionAndRole + the dynamic permission API for route tests
 vi.mock("mbkauthe", async (importOriginal) => {
   const actual = await importOriginal();
-  const appKey = () => (process.env.APP_NAME || "blog").toLowerCase();
-  const segmentMatch = (a, b) => a === "*" || b === "*" || a === b;
   const permMatch = (stored, required) => {
-    const a = String(stored || "").toLowerCase().split(":");
-    const b = String(required || "").toLowerCase().split(":");
-    return a.length === 3 && b.length === 3 && segmentMatch(a[0], b[0]) && segmentMatch(a[1], b[1]) && segmentMatch(a[2], b[2]);
+    const a = typeof stored === "number" ? stored : actual.resolvePermissionId(stored);
+    const b = typeof required === "number" ? required : actual.resolvePermissionId(required);
+    return a > 0 && b > 0 && a === b;
   };
   const denyCheck = (user, permission) => {
     const perms = user?.permissions;
@@ -38,18 +36,7 @@ vi.mock("mbkauthe", async (importOriginal) => {
 
   return {
     ...actual,
-    definePermissions: (manifest, options = {}) => {
-      const key = (options?.appKey || appKey());
-      const out = {};
-      for (const [service, actions] of Object.entries(manifest || {})) {
-        out[service] = {};
-        for (const action of Object.keys(actions || {})) out[service][action] = `${key}:${service}:${action}`;
-      }
-      Object.defineProperty(out, "__appKey", { value: key, enumerable: false });
-      Object.defineProperty(out, "__manifest", { value: manifest || {}, enumerable: false });
-      return out;
-    },
-    syncAppPermissions: async () => ({ appKey: appKey(), synced: 0, deactivated: 0 }),
+    syncAppPermissions: async () => ({ appKey: "blog", synced: 0, deactivated: 0 }),
     hasPermission: (user, required) => {
       if (user?.role === "superadmin") return true;
       if (denyCheck(user, required)) return false;
