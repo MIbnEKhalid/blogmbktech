@@ -141,7 +141,6 @@ a {
 .btn-primary:hover {
     background: var(--primary-dk);
     border-color: var(--primary-dk);
-    transform: translateY(-1px);
     box-shadow: 0 4px 10px rgba(15, 118, 110, 0.25);
 }
 
@@ -155,7 +154,6 @@ a {
     background: var(--primary-lt);
     color: var(--primary-dk);
     border-color: var(--primary);
-    transform: translateY(-1px);
 }
 
 .btn-success {
@@ -501,7 +499,6 @@ footer {
     background: var(--primary-lt);
     border-color: var(--primary);
     color: var(--primary-dk);
-    transform: translateY(-1px);
 }
 
 .pagination-btn.disabled {

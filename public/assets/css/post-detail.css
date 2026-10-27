@@ -340,7 +340,6 @@
     background: var(--primary-lt);
     color: var(--primary-dk);
     border-color: var(--primary);
-    transform: translateY(-1px);
 }
 
 .article-title {
@@ -523,7 +522,6 @@
     background: var(--primary-lt);
     color: var(--primary-dk);
     border-color: var(--primary);
-    transform: translateY(-2px);
 }
 
 .share-btn.whatsapp:hover {
@@ -714,7 +712,6 @@
     background: var(--primary);
     color: #ffffff;
     border-color: var(--primary);
-    transform: translateY(-2px);
     box-shadow: 0 8px 24px rgba(15, 118, 110, 0.25);
 }
 
@@ -869,7 +866,6 @@
 }
 
 .related-card:hover {
-    transform: translateY(-4px);
     border-color: rgba(15, 118, 110, 0.35);
     box-shadow: 0 12px 30px rgba(15, 118, 110, 0.1);
 }

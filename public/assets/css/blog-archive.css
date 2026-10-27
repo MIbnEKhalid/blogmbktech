@@ -37,7 +37,6 @@
 }
 
 .category-card:hover {
-    transform: translateY(-3px);
     box-shadow: 0 12px 30px rgba(15, 118, 110, 0.09);
     border-color: rgba(15, 118, 110, 0.25);
 }
@@ -151,7 +150,6 @@
 }
 
 .tag-item:hover {
-    transform: translateY(-2px);
     background: var(--primary-lt);
     border-color: var(--primary);
     color: var(--primary-dk);
